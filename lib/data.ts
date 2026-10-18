@@ -1,107 +1,68 @@
-// Platform data from "Remote platforms that hire from India, ranked by ease (Oct 2026)".
-// The build-first section is added on top of that research and is marked unverified.
+// Platform data. Entries come from "Remote platforms that hire from India, ranked by ease
+// (Oct 2026)" plus a second research pass (Oct 2026) on test pipelines, legitimacy and
+// build-first hiring. Stage details are from official pages where they exist, otherwise from
+// candidate write-ups; anything unconfirmed says so in the text.
 
-export type Kind = "freelance" | "boards" | "vetted" | "build";
-
-export type Test =
-  | "open"
-  | "review"
-  | "ai"
-  | "build"
-  | "practical"
-  | "live"
-  | "dsa"
-  | "aptitude"
-  | "invite";
-
-export type Dsa = "yes" | "some" | "no";
-
-export interface Platform {
-  id: string;
-  name: string;
-  url: string;
-  kind: Exclude<Kind, "boards">;
-  group?: "dev" | "ai";
-  label: string;
-  test: Test;
-  testLabel?: string;
-  /** Entry test difficulty, 1 (walk in) to 5 (top few percent pass). null = can't apply. */
-  difficulty: number | null;
-  dsa: Dsa;
-  /** Overall ease rank from the research (1 = easiest of 25). */
-  researchRank?: number;
-  lo: number | null;
-  hi: number | null;
-  est: boolean;
-  basis: string;
-  entry: string;
-  hours: string;
-  fees: string;
-  watch: string;
-  src: [string, string][];
-  unverified?: boolean;
-}
-
-export interface Board {
-  id: string;
-  name: string;
-  url: string;
-  note: string;
-  cost: string;
-  /** Who mostly posts there, which shapes the interview you'll usually meet. */
-  mix: "startup" | "mixed";
-  researchRank: number;
-}
+import type { Dropped, Dsa, Format, Kind, Platform, Stage, Test } from "./types";
 
 export const TESTS: { id: Test; label: string; hint: string }[] = [
   { id: "open", label: "Open sign-up", hint: "Make a profile and start bidding" },
-  { id: "review", label: "Profile review", hint: "A person approves your profile or portfolio" },
-  { id: "ai", label: "AI interview", hint: "Recorded or live AI screen, practical not puzzles" },
-  { id: "build", label: "Build first", hint: "Ship real work; the client picks from what was built" },
-  { id: "practical", label: "Practical test", hint: "Real-world coding task or per-project qualification" },
+  { id: "ai", label: "AI interview", hint: "Spoken or video interview scored by AI" },
+  { id: "practical", label: "Practical / take-home", hint: "Real-world task or code review, no puzzles" },
+  { id: "trial", label: "Paid trial on real work", hint: "Days to weeks of paid work in the real codebase" },
   { id: "live", label: "Live coding", hint: "Coding with an interviewer watching" },
   { id: "dsa", label: "DSA test", hint: "Timed algorithm and data-structure problems" },
   { id: "aptitude", label: "Aptitude test", hint: "IQ-style questions against the clock" },
-  { id: "invite", label: "Invite only", hint: "You can't apply; they contact you" },
 ];
 
-export const TEST_ORDER: Record<Test, number> = Object.fromEntries(
-  TESTS.map((t, i) => [t.id, i]),
-) as Record<Test, number>;
+export const TEST_ORDER = Object.fromEntries(TESTS.map((t, i) => [t.id, i])) as Record<Test, number>;
 
-export const KINDS: {
-  id: Kind;
-  title: string;
-  short: string;
-  blurb: string;
-}[] = [
+export const FORMATS: { id: Format; label: string; hint: string }[] = [
+  { id: "ai", label: "AI interview", hint: "Spoken or video interview scored by an AI" },
+  { id: "english", label: "English check", hint: "Spoken or written English and communication" },
+  { id: "mcq", label: "Stack quiz", hint: "Multiple-choice on your language and framework" },
+  { id: "dsa", label: "DSA coding", hint: "Timed algorithm problems" },
+  { id: "live", label: "Live coding", hint: "Coding while an interviewer watches" },
+  { id: "takehome", label: "Take-home project", hint: "Build something on your own time to a spec" },
+  { id: "trial", label: "Paid trial on real work", hint: "Paid days or weeks inside a real codebase" },
+  { id: "codereview", label: "Code / PR review", hint: "Review a diff or merge request and defend your comments" },
+  { id: "aieval", label: "Judging AI code", hint: "Rank, fix and critique code written by AI models" },
+  { id: "sysdesign", label: "System design", hint: "Design and scale a system out loud" },
+  { id: "aptitude", label: "Aptitude (CCAT)", hint: "50 logic, maths and verbal questions in 15 minutes" },
+  { id: "talk", label: "Interviews and calls", hint: "Talking through your experience with a person" },
+];
+
+export const DSA_ORDER: Record<Dsa, number> = { none: 0, easy: 1, medium: 2, hard: 3 };
+export const DSA_LABEL: Record<Dsa, string> = { none: "None", easy: "Easy", medium: "Medium", hard: "Hard" };
+
+export const KINDS: { id: Kind; title: string; short: string; blurb: string }[] = [
   {
     id: "freelance",
     title: "Freelancer portals",
     short: "Freelance",
     blurb:
-      "Open marketplaces. You make a profile, bid or list services, and clients pick you from proposals and reviews. Almost no entry test; the hard part is winning the first few clients.",
+      "Open marketplaces where clients pick you from proposals and reviews. Only one is worth a senior developer's time: the rest compete on price.",
   },
   {
     id: "boards",
     title: "Direct remote job boards",
     short: "Job boards",
     blurb:
-      "The employer hires you directly and runs their own interviews (coding, system design, behavioral). This is where the highest offers are, but you need the coding prep. For India-eligible remote roles, expect $2–6K a month; AI and Forward Deployed specialists can get $6K+.",
+      "The employer hires you directly and runs their own interviews. This is where the highest offers are, but you need the prep. For India-eligible remote roles, expect $2–6K a month; AI and Forward Deployed specialists can get $6K+.",
   },
   {
     id: "vetted",
     title: "Test-and-match marketplaces",
     short: "Test and match",
     blurb:
-      "Like Turing: you pass their tests once, join a pool, and they match you to client projects. Two kinds: developer networks that place you on client teams, and AI-training networks that pay you to write and judge code for AI labs.",
+      "Like Turing and Andela: pass their test pipeline once, join a pool, and get matched to clients. On every one of these, passing gets you into a queue, not into paid work, so run two or three in parallel.",
   },
   {
     id: "build",
-    title: "Build-first portals",
+    title: "Build-first hiring",
     short: "Build first",
     blurb:
-      "No interview up front. You build the thing (a merged pull request, a bounty submission, a hackathon demo, a paid trial project) and the client chooses from finished work. Good if you'd rather show than solve puzzles; the cost is unpaid work when you don't win.",
+      "Companies that decide by watching you do real work: a paid trial in their codebase, a merge-request review, or contract-to-hire. No contests or prize bounties. Toptal's test project and Crossover's real-work assessment are build steps too, listed under test-and-match because their first gates are DSA and aptitude.",
   },
 ];
 
@@ -109,362 +70,426 @@ export const PLATFORMS: Platform[] = [
   // Freelancer portals
   {
     id: "upwork", name: "Upwork", url: "https://www.upwork.com", kind: "freelance", label: "Freelance marketplace",
-    test: "open", testLabel: "No test", difficulty: 1, dsa: "no", researchRank: 1,
-    entry: "Open sign-up. Your past Upwork history ($20K+ earned) gives you a head start.",
-    lo: 2000, hi: 6000, est: true, basis: "India full-stack median is $15–35/hr; AI-agent work pays more once you have reviews.",
-    hours: "Depends on the clients you win", fees: "0–15% per contract (about 10% on most), paid Connects for each bid, 18% GST on fees without a GSTIN",
-    watch: "Takes months to build steady clients; many proposals go unanswered",
-    src: [["Fees", "https://support.upwork.com/hc/en-us/articles/211062538-Learn-about-the-Freelancer-Service-Fee"], ["Rates", "https://www.upwork.com/hire/full-stack-developers/cost/"]],
-  },
-  {
-    id: "braintrust", name: "Braintrust", url: "https://www.usebraintrust.com", kind: "freelance", label: "Freelance network",
-    test: "ai", difficulty: 2, dsa: "no", researchRank: 4,
-    entry: "Profile, ID check and a 5–10 minute AI screen (not technical). Each client then interviews you.",
-    lo: 3500, hi: 8000, est: true, basis: "You set your rate; $30–50/hr at full-time hours.",
-    hours: "Contract, set with each client", fees: "You keep 100%; the client pays 15% on top",
-    watch: "Approval isn't work; ignore 'clients' who send files to open (malware reports)",
-    src: [["Approval guide", "https://support.usebraintrust.com/hc/en-us/articles/14302713002391-Guide-Becoming-Approved-Talent"]],
-  },
-  {
-    id: "codementor", name: "Codementor", url: "https://www.codementor.io", kind: "freelance", label: "Freelance mentoring",
-    test: "open", testLabel: "No test", difficulty: 1, dsa: "no", researchRank: 12,
-    entry: "Create a mentor profile and take paid help sessions.",
-    lo: 300, hi: 1500, est: true, basis: "Sessions of about $8–30 per 15 minutes; demand is sporadic.",
-    hours: "On demand", fees: "13–22% depending on activity", watch: "Side income only",
-    src: [["Fees", "https://support.codementor.io/en/articles/4226113"]],
-  },
-  {
-    id: "fiverr", name: "Fiverr (and Fiverr Pro)", url: "https://www.fiverr.com", kind: "freelance", label: "Freelance marketplace",
-    test: "open", testLabel: "No test", difficulty: 1, dsa: "no", researchRank: 13,
-    entry: "Anyone can list services. Fiverr Pro needs an application with a portfolio (2–4 week review).",
-    lo: 500, hi: 3000, est: true, basis: "Priced per service package; no hourly data published.",
-    hours: "Per order", fees: "Flat 20%; earnings held 7–14 days", watch: "Very crowded; disputes tend to favor buyers",
-    src: [["Fiverr Pro", "https://help.fiverr.com/hc/en-us/articles/29453001296913-How-to-become-a-Fiverr-Pro-freelancer"]],
-  },
-  {
-    id: "freelancer", name: "Freelancer.com", url: "https://www.freelancer.com", kind: "freelance", label: "Freelance marketplace",
-    test: "open", testLabel: "No test", difficulty: 1, dsa: "no", researchRank: 15,
-    entry: "Open sign-up; 6 free bids a month.",
-    lo: 500, hi: 2500, est: true, basis: "Projects often get 40–80 bids, which pushes prices down.",
-    hours: "Per project", fees: "10% (or $5 minimum) per project, plus 1% tax collected in India", watch: "Heavy price competition",
-    src: [["Fees", "https://www.freelancer.com/feesandcharges"]],
-  },
-  {
-    id: "peopleperhour", name: "PeoplePerHour", url: "https://www.peopleperhour.com", kind: "freelance", label: "Freelance marketplace",
-    test: "review", testLabel: "Application review", difficulty: 2, dsa: "no", researchRank: 16,
-    entry: "Applications are moderated and often rejected for crowded skills.",
-    lo: 500, hi: 2500, est: true, basis: "Mostly UK and EU clients.",
-    hours: "Per project", fees: "20%, falling to 7.5% and 3.5% per client as billing grows", watch: "Expect rejections at sign-up",
-    src: [["Fees", "https://support.peopleperhour.com/hc/en-us/articles/205218337-Freelancer-commission-fees"]],
-  },
-  {
-    id: "guru", name: "Guru", url: "https://www.guru.com", kind: "freelance", label: "Freelance marketplace",
-    test: "open", testLabel: "No test", difficulty: 1, dsa: "no", researchRank: 17,
-    entry: "Open sign-up.",
-    lo: 300, hi: 2000, est: true, basis: "Low project volume.",
-    hours: "Per project", fees: "9% on the free plan, down to 5% on the top paid plan", watch: "Few good projects",
-    src: [["Fees", "https://www.guru.com/help/freelancer/job-fee/"]],
+    test: "open", difficulty: 1,
+    stages: [
+      { title: "Profile review", formats: [], inside: "New profiles are reviewed before you can bid. Yours is already approved, with $20K+ earned." },
+      { title: "Proposal", formats: [], inside: "A written proposal per job. Connects cost $0.15 each and aren't refunded if you lose." },
+      { title: "Client interview", formats: ["talk"], time: "20–45 min", inside: "Each client runs their own, usually a call about past work. There's no platform-wide skills test." },
+      { title: "Expert-Vetted (optional)", formats: ["talk"], time: "30 min", inside: "Invite-only since 30 June 2024: an interview with a Talent Manager on hard and soft skills, decided in 4–6 weeks. The badge shows only to Enterprise and Business Plus clients." },
+    ],
+    prep: "Your history is the asset. Pin AI-agent case studies to your profile and bid on fewer, closer-matched jobs.",
+    after: "No pool or waiting list: you start when a client hires you. Steady long-term clients take months to build, but this is the one open marketplace where $5–8K a month is realistic.",
+    lo: 2000, hi: 6000, est: true,
+    pay: "India full-stack median is $15–35/hr; AI-agent work pays more once you have reviews. Since May 2025 the fee is 0–15% per contract; non-US freelancers lose about 13–18% in total to fees.",
+    watch: "Many proposals go unanswered; Expert-Vetted can't be applied for.",
+    src: [["Fees", "https://support.upwork.com/hc/en-us/articles/211062538-Learn-about-the-Freelancer-Service-Fee"], ["Expert-Vetted", "https://support.upwork.com/hc/en-us/articles/360049625454-Expert-Vetted-talent"]],
   },
 
   // Test-and-match: developer networks
   {
-    id: "uplers", name: "Uplers", url: "https://www.uplers.com/talent/", kind: "vetted", group: "dev", label: "Vetted network, India only",
-    test: "practical", difficulty: 3, dsa: "no", researchRank: 6,
-    entry: "Technical test, Versant English test and a 30-minute AI-scored screen, then client interviews.",
-    lo: 2500, hi: 5000, est: true, basis: "Uplers' 2026 benchmark: senior $36–48K/yr, AI/ML specialists up to $72K+.",
-    hours: "Full-time remote contract, 3 months minimum", fees: "Your take-home and payout currency are not published",
-    watch: "Clients pay from about $2,500/month, so confirm your share before you accept",
-    src: [["FAQ", "https://www.uplers.com/talent/faqs/"], ["Salary benchmark", "https://www.uplers.com/article/software-engineer-salary-india/"]],
+    id: "arc", name: "Arc.dev", url: "https://arc.dev/talent", kind: "vetted", group: "dev", label: "Vetted network, accepts India",
+    test: "live", difficulty: 3,
+    stages: [
+      { title: "Profile screening", formats: [], inside: "A person reviews your work history and GitHub. Padded resumes get rejected." },
+      { title: "Communication check", formats: ["english"], inside: "A recorded video or voice self-introduction to check English and remote readiness." },
+      { title: "Technical interview", formats: ["live", "dsa"], dsa: "medium", time: "about 1 hr", inside: "Live coding or pair programming with an expert, on algorithms and your own domain. Arc publishes no test platform or retake policy." },
+      { title: "Final review and onboarding call", formats: ["talk"], inside: "A last check, then you're in the network. Arc claims the top 2.3% get through." },
+    ],
+    prep: "Medium LeetCode while explaining your reasoning out loud, a polished 2-minute video intro, and an up-to-date GitHub.",
+    after: "Vetting only starts when a matching role opens, and clients find you through Arc's matching, so expect to wait. Profiles can sit in 'Reviewing' for a long time.",
+    lo: 3000, hi: 6000, est: false,
+    pay: "Arc's India page: freelancers $10–80/hr; India remote developers expect about $48.9K/yr on average. Free for developers; Arc adds a 20–40% markup for clients.",
+    watch: "Long waits between passing and a client. Trustpilot reviews are mostly positive with on-time payouts.",
+    src: [["Vetting", "https://arc.dev/employer-blog/vetting-process/"], ["How Arc works", "https://arc.dev/how-arc-works"], ["India pay", "https://arc.dev/remote-developer-salary/india"]],
   },
   {
-    id: "supersourcing", name: "Supersourcing", url: "https://supersourcing.com/developers/", kind: "vetted", group: "dev", label: "Vetted network, India",
-    test: "practical", difficulty: 3, dsa: "some", researchRank: 11,
-    entry: "AI profile screen, automated tests, then technical and video interviews.",
-    lo: 1500, hi: 4000, est: true, basis: "Clients pay $18–40/hr (AI/ML $40–60/hr); your share is not published.",
-    hours: "Contract staffing", fees: "Built into the client rate", watch: "Ask what you receive, not what the client pays",
-    src: [["Rates", "https://supersourcing.com/blog/hire-remote-software-developers-india/"]],
+    id: "turing", name: "Turing", url: "https://www.turing.com/jobs", kind: "vetted", group: "dev", label: "Developer jobs track",
+    test: "dsa", difficulty: 4,
+    stages: [
+      { title: "Work-experience survey", formats: [], time: "20–30 min", inside: "57 questions about your experience (60 minutes allowed)." },
+      { title: "Tech-stack quizzes", formats: ["mcq"], time: "45–120 min each", inside: "Multiple-choice on your stack's fundamentals and reading code. Turing says to expect 3–6 hours of testing in total." },
+      { title: "Coding challenge", formats: ["dsa", "aieval"], dsa: "medium", time: "about 90 min", proctored: true, inside: "Two LeetCode-style problems, one easy and one medium; you need 80%+ of test cases to pass. Newer versions add a section comparing two AI model answers." },
+      { title: "Technical interview (some tracks)", formats: ["talk"], time: "about 1 hr", inside: "Reports conflict: some tracks add a 1-hour technical interview, others go straight to matching." },
+      { title: "Client interview", formats: ["talk"], inside: "After AI matching, the client runs their own interview." },
+    ],
+    prep: "Medium LeetCode on arrays, strings, hash maps, sliding window and light DP; timed multiple-choice practice on your stack; practise judging which of two AI answers is better.",
+    retake: "Wait 3 months. Passed tests stay valid about 6 months (not confirmed on an official page).",
+    after: "Most open roles are now LLM-trainer contracts, and people report 3–4 months in the pool after passing. Contracts are 20, 30 or 40 hrs/week with 4 hours of US Pacific overlap.",
+    lo: 2500, hi: 6000, est: true,
+    pay: "Not published. One 2025 case: the client paid $14.5K a month and the developer received $6K.",
+    watch: "India reviews mention layoffs and a lack of projects. Payments are reported as on time.",
+    src: [["Test prep", "https://www.turing.com/blog/turing-developer-test-preparation-tips"], ["How to get hired", "https://www.turing.com/blog/turing-com-review-good-for-remote-developer-jobs"], ["Glassdoor interviews", "https://www.glassdoor.com/Interview/Turing-Software-Engineer-Interview-Questions-EI_IE2462330.0,6_KO7,24.htm"]],
   },
   {
-    id: "andela", name: "Andela", url: "https://www.andela.com/for-talent", kind: "vetted", group: "dev", label: "Vetted network",
-    test: "live", testLabel: "Technical + live", difficulty: 4, dsa: "some", researchRank: 20,
-    entry: "Needs 4+ years. English test, technical assessment, then a live technical interview.",
-    lo: 2500, hi: 5000, est: true, basis: "India pay not published; low-confidence estimate.",
-    hours: "Contract, full- or part-time", fees: "Not published",
-    watch: "Talent mostly from Africa and Latin America; complaints about pay and a 15-day trial clause",
-    src: [["Eligibility", "https://help.andela.com/hc/en-us/articles/26812894405267-Eligibility-requirements-to-join-the-Andela-Talent-Cloud"], ["Review", "https://www.tecla.io/blog/andela-review"]],
+    id: "andela", name: "Andela", url: "https://www.andela.com/for-talent", kind: "vetted", group: "dev", label: "Vetted network, 4+ years",
+    test: "dsa", difficulty: 4,
+    check: "India isn't confirmed on Andela's list of approved countries (the page returned an error during research). Confirm before you take the test.",
+    stages: [
+      { title: "English test", formats: ["english"], inside: "AI-scored. Can be skipped with an English-medium degree." },
+      { title: "Skills assessment", formats: ["dsa"], dsa: "hard", time: "about 1 hr, within 48 hrs", proctored: true, inside: "Several coding challenges in your chosen language on Andela's Qualified platform; candidates report 2–4 problems, medium to hard. Camera snapshots: a blurry image can disqualify you." },
+      { title: "Live technical interview", formats: ["live", "talk"], time: "60 min", inside: "Discussion plus practical work: why you designed things the way you did, and real-world problems rather than puzzles." },
+      { title: "Client interviews", formats: ["talk"], inside: "After matching. Contracts start with a 15-day trial." },
+    ],
+    prep: "Timed medium-to-hard problems on HackerRank or Qualified with clean, readable code, and a walkthrough of a system you built.",
+    retake: "180 days after failing or being disqualified from the assessment; 90 days after a failed interview (you restart at the interview).",
+    after: "Matching is slow and client loops are long. Paid in USD as a contractor.",
+    lo: 2500, hi: 5000, est: true,
+    pay: "India pay not published; low-confidence estimate.",
+    watch: "Talent pool is mostly Africa and Latin America; several rounds of staff layoffs 2023–25.",
+    src: [["Skills test", "https://help.andela.com/hc/en-us/articles/26607236489363-Step-2-The-technical-skills-test"], ["Live interview", "https://help.andela.com/hc/en-us/articles/26571687079955-Step-2-The-live-technical-interview"], ["Eligibility", "https://help.andela.com/hc/en-us/articles/26812894405267-Eligibility-requirements-to-join-the-Andela-Talent-Cloud"]],
   },
   {
-    id: "arc", name: "Arc.dev", url: "https://arc.dev/talent", kind: "vetted", group: "dev", label: "Vetted network",
-    test: "live", difficulty: 4, dsa: "some", researchRank: 22,
-    entry: "English check, then a 1-hour live coding interview (about 2% pass overall). Vetting starts only when a matching role opens.",
-    lo: 3000, hi: 6000, est: false, basis: "India remote developers expect about $48.9K/yr on average (Arc's data).",
-    hours: "Freelance or full-time", fees: "Free for talent", watch: "Profiles can sit in 'Reviewing' for a long time",
-    src: [["Vetting", "https://arc.dev/employer-blog/vetting-process/"], ["India pay", "https://arc.dev/remote-developer-salary/india"]],
+    id: "toptal", name: "Toptal", url: "https://www.toptal.com", kind: "vetted", group: "dev", label: "Vetted network, accepts India",
+    test: "dsa", difficulty: 5,
+    stages: [
+      { title: "English and personality interview", formats: ["english", "talk"], inside: "A live call. 26.4% of all applicants are still in after this stage." },
+      { title: "Skill review", formats: ["dsa"], dsa: "hard", time: "90–100 min", inside: "Timed Codility test: 3 problems (easy, medium, hard), auto-scored on correctness and performance; about 210/300 to pass. Some 2026 reports say HackerRank plus short theory quizzes. 7.4% still in." },
+      { title: "Live screening", formats: ["live", "codereview"], inside: "Two live coding tasks of 15–20 minutes each; the screener also goes through your skill-review solutions with you. 3.6% still in." },
+      { title: "Test project", formats: ["takehome", "codereview"], time: "1–3 weeks, 30–50 hrs", inside: "Usually a full-stack app built to a spec, then a call where you demo it and defend your code. Unpaid. 3.2% still in." },
+      { title: "Ongoing performance tracking", formats: [], inside: "About 3% of applicants end up in the network." },
+    ],
+    prep: "Codility Lessons (prefix sums, sorting, greedy, DP, graphs); aim to fully solve 2 of 3 with efficient code. Budget about 40 hours for the project.",
+    retake: "About 6 months is commonly reported; no official policy found.",
+    after: "Passing doesn't guarantee work: you apply to client jobs and may still interview. Payout delays of 20 days to 6 weeks are reported.",
+    lo: 5000, hi: 10000, est: true,
+    pay: "You set your rate; reported $35–150+/hr. Toptal adds a 30–60% markup for clients.",
+    watch: "The 30–50 hour test project is unpaid.",
+    src: [["Top 3%", "https://www.toptal.com/top-3-percent"], ["FAQ", "https://www.toptal.com/freelance-jobs/faq"], ["Codility write-up", "https://souvic.medium.com/how-i-passed-the-toptal-codility-test-32f99f22d758"]],
   },
   {
-    id: "turing", name: "Turing", url: "https://www.turing.com/jobs", kind: "vetted", group: "dev", label: "Vetted network and AI training",
-    test: "dsa", difficulty: 4, dsa: "yes", researchRank: 7,
-    entry: "3–6 hours of tests: stack questions plus algorithm and data-structure coding, then a 1-hour technical interview.",
-    lo: 2500, hi: 6000, est: true, basis: "Not published. One 2025 case: developer received $6K/month. LLM-trainer roles $15–75/hr.",
-    hours: "20, 30 or 40 hrs/week contracts, with 4 hours of overlap with US Pacific time",
-    fees: "Large; in one case the client paid $14.5K and the developer got $6K",
-    watch: "Weeks to months of waiting for a match after you pass",
-    src: [["How to get hired", "https://www.turing.com/blog/turing-com-review-good-for-remote-developer-jobs"], ["AI work", "https://work.turing.com/"], ["Review", "https://www.tecla.io/blog/turing-review"]],
-  },
-  {
-    id: "flexiple", name: "Flexiple", url: "https://flexiple.com", kind: "vetted", group: "dev", label: "Vetted network, India",
-    test: "dsa", difficulty: 4, dsa: "yes", researchRank: 21,
-    entry: "Proctored algorithm tests, practical assessments and interviews.",
-    lo: 2500, hi: 6000, est: true, basis: "Clients pay $30–100/hr; your share is not published.",
-    hours: "Contract, hourly or monthly", fees: "Built into the client rate", watch: "Few developer reviews to judge it by",
-    src: [["Overview", "https://slashdot.org/software/p/Flexiple/"]],
-  },
-  {
-    id: "gigster", name: "Gigster", url: "https://gigster.com/network-faq/", kind: "vetted", group: "dev", label: "Project network",
-    test: "aptitude", testLabel: "Aptitude + technical", difficulty: 4, dsa: "some", researchRank: 23,
-    entry: "60-minute aptitude/technical test, a 30-minute call, then a 30-minute technical interview.",
-    lo: null, hi: null, est: false, basis: "Pay not published.",
-    hours: "Project teams, paid per milestone", fees: "Not published", watch: "Little public information on developer earnings",
-    src: [["Network FAQ", "https://gigster.com/network-faq/"]],
-  },
-  {
-    id: "toptal", name: "Toptal", url: "https://www.toptal.com", kind: "vetted", group: "dev", label: "Vetted network",
-    test: "dsa", difficulty: 5, dsa: "yes", researchRank: 25,
-    entry: "English call, timed algorithm test, live technical screen, then a 1–3 week test project. Under 3% are accepted.",
-    lo: 5000, hi: 10000, est: true, basis: "You set your rate; reported $35–150+/hr.",
-    hours: "Hourly, part- or full-time", fees: "Toptal's markup is billed to the client", watch: "Some skills are waitlisted; matching can be slow",
-    src: [["Top 3%", "https://www.toptal.com/top-3-percent"], ["FAQ", "https://www.toptal.com/freelance-jobs/faq"]],
-  },
-  {
-    id: "crossover", name: "Crossover", url: "https://www.crossover.com/jobs/software-engineer/india", kind: "vetted", group: "dev", label: "Vetted network",
-    test: "aptitude", difficulty: 5, dsa: "no", researchRank: 24,
-    entry: "Aptitude test (50 questions in 15 minutes, roughly top 10% needed), skill and English tests, then a real-work trial.",
-    lo: 4000, hi: 8000, est: true, basis: "Fixed USD rate per role, the same in every country ($22–105/hr across roles on Glassdoor India).",
-    hours: "Full-time, 40 hrs/week; reliable weekly pay", fees: "None to you",
-    watch: "Tracking software takes screenshots and webcam photos every 10 minutes; 3–6 month wait to retake",
-    src: [["Glassdoor India", "https://www.glassdoor.com/Salary/Crossover-for-Work-India-Salaries-EI_IE1041838.0,18_IL.19,24_IN115.htm"], ["Experience", "https://medium.com/@sekhar.vallath_97547/the-top-1-my-experience-at-crossover-55a0e2d56a7c"]],
+    id: "crossover", name: "Crossover", url: "https://www.crossover.com/jobs/software-engineer/india", kind: "vetted", group: "dev", label: "Fixed USD pay, same in every country",
+    test: "aptitude", difficulty: 5,
+    stages: [
+      { title: "Fit questions and AI screen", formats: ["ai"], time: "15–20 min", inside: "Basic yes/no fit questions and a short AI screening interview." },
+      { title: "CCAT aptitude test", formats: ["aptitude"], time: "15 min", inside: "50 verbal, maths and logic questions in 15 minutes, no calculator. Switching tabs disqualifies you. Each role has its own cutoff." },
+      { title: "Skills test and real-work assessment", formats: ["takehome"], inside: "A job-like task graded against a published rubric. 'AI-First' engineering roles expect daily use of Claude Code, Cursor or Copilot." },
+      { title: "Interview", formats: ["talk"], time: "about 30 min", inside: "Google Meet with an engineering leader." },
+      { title: "Proctored CCAT", formats: ["aptitude"], time: "15 min", proctored: true, inside: "The CCAT again with webcam, phone proctoring and an ID check. Crossover says about 1 in 100 candidates reach this step." },
+    ],
+    prep: "CCAT practice tests (about 18 seconds per question) and a spec-first, test-driven workflow with AI coding tools.",
+    retake: "6 months.",
+    after: "Offers often come within days. Full-time, 40 hrs/week as an independent contractor, paid weekly via Payoneer.",
+    lo: 4000, hi: 8300, est: true,
+    pay: "Fixed USD rate per role: standard engineering roles about $100K/yr (~$50/hr), some up to $200K.",
+    watch: "WorkSmart tracking: screenshots, webcam photos and keystrokes in 10-minute blocks; idle time is unpaid. No leave or benefits.",
+    src: [["Selection process", "https://www.crossover.com/selection-process"], ["Proctored CCAT", "https://www.crossover.com/resources/pccat-guide"], ["Skill tests", "https://www.crossover.com/resources/crossover-s-skill-based-assessments-official-skill-test-guide"], ["Pay", "https://www.crossover.com/help/contractor-pay-calculation"]],
   },
 
-  // Test-and-match: AI training networks
+  // Test-and-match: AI-training networks
   {
-    id: "micro1", name: "micro1", url: "https://www.micro1.ai/experts", kind: "vetted", group: "ai", label: "AI training and expert contracts",
-    test: "ai", difficulty: 2, dsa: "no", researchRank: 2,
-    entry: "20–40 minute AI interview with live coding (practical, not puzzles), plus ID and background check.",
-    lo: 2000, hi: 5000, est: true, basis: "Advertised $40–80/hr, adjusted by location. India rate not published.",
-    hours: "Project-based; paid in USD via Deel twice a month", fees: "None to you",
-    watch: "Passing doesn't guarantee a project; some people wait months",
-    src: [["micro1", "https://www.micro1.ai/experts"], ["Review", "https://annotation.academy/blog/is-micro1-legit"]],
+    id: "micro1", name: "micro1", url: "https://www.micro1.ai/experts", kind: "vetted", group: "ai", label: "AI-interview vetting, open worldwide",
+    test: "ai", difficulty: 2,
+    stages: [
+      { title: "Resume and role", formats: [], inside: "Pick a role and upload your resume, then verify your ID." },
+      { title: "Practice interview (optional)", formats: ["ai"], time: "18 min", inside: "A free practice run with the AI interviewer." },
+      { title: "Zara AI interview", formats: ["ai", "dsa"], dsa: "medium", time: "20–40 min", proctored: true, inside: "Spoken, adaptive interview (about 7 minutes per skill) with camera and screen share, recorded for human review. Engineering roles add live coding: usually one easy/medium LeetCode-style problem (merge intervals is reported) plus debugging or optimisation, in any language." },
+      { title: "Certification and matching", formats: [], inside: "The result shows immediately; a hiring manager then reviews you for specific projects." },
+    ],
+    prep: "One easy/medium problem talked through out loud (intervals, arrays, hash maps) and clear spoken answers. Long pauses before answering are watched as an anti-cheating signal.",
+    after: "Certified people go into a pool; micro1 says far more pass than there are openings. Applicants report 'Hiring Manager Reviewing' for up to 30 days, then 'Not Selected'.",
+    lo: 2000, hi: 5000, est: true,
+    pay: "$20–200/hr overall; one SWE AI-trainer listing shows $20–75/hr. Paid in USD via Deel twice a month, reported as reliable. India rate not published.",
+    watch: "Hubstaff time tracking. Rejections are automated and abrupt, but no unpaid completed work was reported.",
+    src: [["Interview questions", "https://www.micro1.ai/interview-questions"], ["Interview write-up", "https://prachub.com/interview-experiences/micro1-software-engineer-zara-ai-interview-with-rapid-technical-questions-59efcc346c"], ["Waiting", "https://getaiwork.com/articles/micro1-no-response/"]],
   },
   {
-    id: "mercor", name: "Mercor", url: "https://www.mercor.com/experts/", kind: "vetted", group: "ai", label: "AI training and expert contracts",
-    test: "ai", difficulty: 2, dsa: "no", researchRank: 3,
-    entry: "About 20-minute AI video interview (up to 3 retakes) plus short role tests.",
-    lo: 2000, hi: 6000, est: true, basis: "Coding contractors report $35–60/hr; hours are often capped.",
-    hours: "Project-based, 15–40 hrs/week; paid weekly in USD", fees: "None to you (margin charged to client)",
-    watch: "Projects end without notice; 2026 data-breach lawsuit and staff cuts",
-    src: [["Software roles", "https://www.mercor.com/experts/software-engineers/"], ["Payout countries", "https://talent.docs.mercor.com/policies/supported-countries"]],
+    id: "mercor", name: "Mercor", url: "https://www.mercor.com/experts/software-engineers/", kind: "vetted", group: "ai", label: "Expert contracts for AI labs",
+    test: "ai", difficulty: 2,
+    stages: [
+      { title: "AI video interview", formats: ["ai"], time: "about 20 min", inside: "About your resume and projects, plus spoken data-structure concept questions; no live coding reported. Up to 3 retakes, but hiring managers see the count and a retake resets your application." },
+      { title: "Role test (some roles)", formats: ["takehome"], inside: "Some roles add a coding challenge, take-home or domain test." },
+      { title: "Paid work trial", formats: ["trial", "aieval"], paid: true, inside: "One paid trial per person, ever, on real project tasks." },
+    ],
+    prep: "Rehearse a 2-minute walkthrough of your strongest AI-agent project and its trade-offs. Using an LLM to write answers or evaluate code is against the rules.",
+    after: "No formal rejections: no match within 4–6 weeks means not picked. Projects end abruptly (about 800 contractors offboarded from one project in May 2026), and offboarding decisions are final.",
+    lo: 2000, hi: 6000, est: true,
+    pay: "Official SWE range $80–200/hr, paid weekly via Stripe or Wise. India rate not published. In Nov 2025 a Meta project relaunched at $16/hr instead of $21.",
+    watch: "Screen monitoring with Insightful; 2026 contractor-misclassification lawsuit and data-breach class action.",
+    src: [["Software roles", "https://www.mercor.com/experts/software-engineers/"], ["AI interview", "https://talent.docs.mercor.com/support/ai-interview"], ["Pay cut", "https://www.forbes.com/sites/iainmartin/2025/11/12/the-worlds-youngest-self-made-billionaires-just-slashed-these-workers-wages-by-a-third/"]],
   },
   {
-    id: "mindrift", name: "Mindrift (formerly Toloka)", url: "https://mindrift.ai", kind: "vetted", group: "ai", label: "AI training",
-    test: "practical", difficulty: 2, dsa: "no", researchRank: 5,
-    entry: "Sign up, then qualify for each project separately.",
-    lo: 800, hi: 3000, est: true, basis: "Coding advertised 'up to $90/hr'; general tasks in lower-cost countries pay $5–15/hr.",
-    hours: "Project-based; paid via Payoneer or Tipalti", fees: "None found",
-    watch: "Which projects you see depends on your country; side income, not a salary",
-    src: [["Coding projects", "https://mindrift.ai/project/code"], ["Review", "https://www.aitrainingjobsfinder.com/blog/toloka-review-2026"]],
+    id: "turing-agi", name: "Turing AGI", url: "https://work.turing.com/", kind: "vetted", group: "ai", label: "Coding-trainer contracts",
+    test: "practical", difficulty: 2,
+    check: "The senior 'AI Evaluation / Coding Agents' role ($100–150/hr: AI interview, code-evaluation exercise, manager interview) is North America only. The pipeline below is the India-eligible track.",
+    stages: [
+      { title: "Self-scheduled coding challenge", formats: ["dsa"], dsa: "medium", time: "30–45 min", inside: "An automated challenge in any language on Turing's Vetsmith platform. Difficulty isn't published; likely easy to medium." },
+      { title: "Project matching", formats: ["aieval"], inside: "Assigned to LLM-training projects: writing and judging code and model answers." },
+    ],
+    prep: "Easy/medium timed problems in your best language; practise explaining why one model answer is better than another.",
+    after: "Minimum 20 hrs/week with 4 hours of Pacific overlap (late evening in India). Contracts start at 1 month; software contracts average about 8.4 weeks. Profiles can sit 'assigned' for weeks with no tasks.",
+    lo: 1500, hi: 5000, est: true,
+    pay: "India rate not published; US LLM trainers earn $29–51/hr. Paid on the 1st and 16th, reported on time.",
+    watch: "Confirm the USD rate before you commit hours.",
+    src: [["India-eligible listing", "https://work.turing.com/r/8ZxbHe4qSQ"], ["Review", "https://talentsforai.com/blog/is-turing-legit/"]],
   },
   {
-    id: "g2i", name: "G2i", url: "https://www.g2i.ai/for-talent", kind: "vetted", group: "ai", label: "AI training (code review)",
-    test: "practical", difficulty: 3, dsa: "no", researchRank: 8,
-    entry: "About 3.5 hours of screening and onboarding; needs 3–4+ years of experience.",
-    lo: 2500, hi: 6000, est: true, basis: "Typically $30–70/hr to judge AI-written code, 15–40 hrs/week.",
-    hours: "Part-time hourly, 15–40 hrs/week", fees: "Not published",
-    watch: "Listings say 'some countries in Asia', so confirm India is eligible before testing",
+    id: "g2i", name: "G2i", url: "https://www.g2i.ai/for-talent", kind: "vetted", group: "ai", label: "Senior engineers judging AI-written code",
+    test: "live", difficulty: 3,
+    check: "G2i doesn't publish the exact steps for its AI-training track; these are its general talent vetting steps.",
+    stages: [
+      { title: "Recorded video questions", formats: ["talk"], inside: "3–5 recorded video answers about your experience." },
+      { title: "Live technical interview", formats: ["live"], time: "45–60 min", inside: "With an engineer, focused on your framework rather than algorithm puzzles." },
+      { title: "Framework test", formats: [], inside: "A test in your main framework; format not published." },
+      { title: "AI-training work", formats: ["aieval", "codereview"], inside: "Ranking output from AI coding agents (Codex, Claude Code), fixing AI-generated code, writing tests and written critiques." },
+    ],
+    prep: "Be sharp in your main framework, and practise reviewing AI-generated diffs: spotting bugs, ranking two solutions and writing short, specific critiques.",
+    after: "You sit on a bench until a project needs you; onboarding takes about a week. Paid weekly, and G2i says it pays even if the client doesn't.",
+    lo: 2500, hi: 6000, est: true,
+    pay: "Senior SWE AI-training roles $100–200/hr at 10–20 hrs/week (rate depends partly on location); other postings $30–70/hr. Open in 150+ countries (May 2026). India rate not published.",
+    watch: "Bench time between projects is the main complaint; no lawsuits found.",
     src: [["For talent", "https://www.g2i.ai/for-talent"], ["2026 hiring", "https://jobbi.org/news/g2i-is-hiring-50-software-engineers-at-up-to-200hour-to-judge-ai-written-code/"]],
   },
-  {
-    id: "invisible", name: "Invisible (Meridial)", url: "https://meridial.ai", kind: "vetted", group: "ai", label: "AI training",
-    test: "practical", difficulty: 3, dsa: "no", researchRank: 9,
-    entry: "Unpaid onboarding, then matching to projects. Some roles are India-only.",
-    lo: 1000, hi: 4000, est: true, basis: "Coding ads list $8–65/hr, set by experience and location.",
-    hours: "Project-based; activity tracked with Hubstaff", fees: "None found", watch: "Same work can pay very differently by region",
-    src: [["Platform review", "https://aitraining.jobs/platforms/invisible-technologies"]],
-  },
-  {
-    id: "outlier", name: "Outlier (Scale AI)", url: "https://outlier.ai", kind: "vetted", group: "ai", label: "AI training",
-    test: "practical", difficulty: 3, dsa: "no", researchRank: 14,
-    entry: "ID check, then unpaid assessments for each project. The India coding role asks for a CS degree from a selective institute.",
-    lo: 1000, hi: 3000, est: true, basis: "India coding listing: $13–28/hr from a task queue.",
-    hours: "Task queue, not steady; paid weekly", fees: "None",
-    watch: "Your degree is ECE, so you may not meet the India coding requirement",
-    src: [["India listing", "https://builtinmumbai.in/job/coding-expertise-ai-training-english-india/3748004"], ["Review", "https://getaiwork.com/articles/outlier-ai-review/"]],
-  },
-  {
-    id: "alignerr", name: "Alignerr", url: "https://www.alignerr.com", kind: "vetted", group: "ai", label: "AI training",
-    test: "practical", testLabel: "Proctored coding", difficulty: 4, dsa: "some", researchRank: 10,
-    entry: "Proctored coding test with one attempt; a fail is usually permanent.",
-    lo: 2000, hi: 4500, est: true, basis: "Advertised $60–120/hr; workers report about $37/hr on average.",
-    hours: "Project-based", fees: "None found",
-    watch: "India eligibility is limited and often city-specific; unpaid 3–5 hour evaluations",
-    src: [["Review", "https://annotation.academy/blog/is-alignerr-legit"], ["BBB complaints", "https://www.bbb.org/us/ca/san-francisco/profile/artificial-intelligence/alignerr-1116-975409/complaints"]],
-  },
-  {
-    id: "deccan", name: "Deccan AI (Soul AI)", url: "https://deccanexperts.ai", kind: "vetted", group: "ai", label: "AI training, India-based",
-    test: "invite", difficulty: null, dsa: "no", researchRank: 18,
-    entry: "Invite-only expert network; most workers are in India.",
-    lo: 1000, hi: 4000, est: true, basis: "Founder claims up to $7K/month for top earners (unverified).",
-    hours: "Project-based", fees: "Not published", watch: "Reports of late or withheld pay",
-    src: [["TechCrunch", "https://techcrunch.com/2026/03/25/deccan-ai-raises-25m-as-ai-training-push-relies-on-india-based-workforce/"]],
-  },
-  {
-    id: "handshake", name: "Handshake AI", url: "https://joinhandshake.com/ai", kind: "vetted", group: "ai", label: "AI training",
-    test: "invite", difficulty: null, dsa: "no", researchRank: 19,
-    entry: "India software engineer role is invite-only; the main program is for US residents.",
-    lo: 2000, hi: 4000, est: true, basis: "India role up to $25/hr (third-party quote of the listing).",
-    hours: "Project-based", fees: "Not published", watch: "2026 class action and reported payment failures",
-    src: [["India role", "https://reconscribe.com/handshake-ai-india/"]],
-  },
 
-  // Build-first portals (added; not part of the October 2026 research)
+  // Build-first hiring
   {
-    id: "superteam", name: "Superteam Earn", url: "https://earn.superteam.fun", kind: "build", label: "Crypto bounties and projects",
-    test: "build", testLabel: "Submit work", difficulty: 2, dsa: "no", unverified: true,
-    entry: "Pick a listed bounty, build it and submit before the deadline. The sponsor picks winners. Project listings take applications with past work instead.",
-    lo: null, hi: null, est: false, basis: "Paid per bounty, usually in USDC. Amounts are on each listing.",
-    hours: "Per bounty or project", fees: "Check each listing",
-    watch: "Solana ecosystem only; most bounty work goes unpaid if you don't place",
-    src: [["Listings", "https://earn.superteam.fun"]],
+    id: "automattic", name: "Automattic", url: "https://automattic.com/work-with-us/how-we-hire-developers/", kind: "build", label: "WordPress.com, Tumblr, WooCommerce",
+    test: "trial", difficulty: 3,
+    check: "India is likely (staff in 80+ countries, India roles on LinkedIn), but whether India hires are USD contractors or employed through a local service isn't confirmed. Ask on the first call.",
+    stages: [
+      { title: "Written application", formats: [], inside: "Answers to written questions instead of a cover letter." },
+      { title: "Slack chat with an engineer", formats: ["talk"], inside: "A text-based interview about your work." },
+      { title: "Coding challenge", formats: ["takehome"], time: "about a week", inside: "An unpaid take-home on near-real-world code. No whiteboarding or puzzles." },
+      { title: "Paid trial", formats: ["trial"], paid: true, time: "15–35 hrs over 2–8 weeks", inside: "Part-time work on a real project over Slack, GitHub and P2, reviewed by the engineers you'd work with. $25/hr flat." },
+      { title: "Final approval", formats: [], inside: "CEO approval (days to a month), sometimes an executive interview." },
+    ],
+    prep: "Write clearly and asynchronously, since most of the process happens in writing, and get comfortable reading a large existing codebase.",
+    after: "Offer after approval. Salaries are 'based on skills, not location'.",
+    lo: null, hi: null, est: false,
+    pay: "Trial paid at $25/hr; salary not published.",
+    watch: "The take-home, trial and approval together can take a few months.",
+    src: [["How we hire", "https://automattic.com/how-we-hire/"], ["About the trial", "https://automattic.com/what-to-expect-during-a-trial/"]],
   },
   {
-    id: "devpost", name: "Devpost hackathons", url: "https://devpost.com/hackathons", kind: "build", label: "Online hackathons",
-    test: "build", testLabel: "Ship a demo", difficulty: 2, dsa: "no", unverified: true,
-    entry: "Join an online hackathon, build a working demo with a short video, and judges pick winners. Sponsors use it to spot people to hire.",
-    lo: null, hi: null, est: false, basis: "Prize money per hackathon; hiring is a side effect, not a promise.",
-    hours: "Weekend to a few weeks per event", fees: "Free to enter",
-    watch: "Check each hackathon's eligible countries; many exclude some regions",
-    src: [["Hackathons", "https://devpost.com/hackathons"]],
+    id: "calcom", name: "Cal.com", url: "https://cal.com/jobs", kind: "build", label: "Paid 30-day contract-to-hire",
+    test: "trial", difficulty: 3,
+    check: "India eligibility unconfirmed: the team is in the US, Latin America and Europe, and contractor vs employee depends on country.",
+    stages: [
+      { title: "Contribute or apply", formats: [], inside: "Apply, or get noticed through merged open-source PRs and Algora bounties on the Cal.com repo." },
+      { title: "Call", formats: ["talk"], inside: "A conversation about your work." },
+      { title: "Paid 30-day contract", formats: ["trial"], paid: true, time: "30 days", inside: "Paid contract work in the real Cal.com codebase, which converts to full-time if it works out." },
+    ],
+    prep: "Get a couple of PRs merged in github.com/calcom/cal.com (TypeScript, Next.js) before you apply.",
+    after: "Full-time offer after the contract.",
+    lo: null, hi: null, est: false,
+    pay: "Current senior full-stack role: $132K–150K plus equity.",
+    watch: "Few openings at any one time.",
+    src: [["Jobs", "https://cal.com/jobs"], ["Bounty-to-hire", "https://x.com/calcom/status/1825479649461178504"]],
   },
   {
-    id: "issuehunt", name: "IssueHunt", url: "https://issuehunt.io", kind: "build", label: "Open-source issue bounties",
-    test: "build", testLabel: "Merged PR", difficulty: 2, dsa: "no", unverified: true,
-    entry: "Fix a funded GitHub issue; you're paid when the maintainer merges your pull request.",
-    lo: null, hi: null, est: false, basis: "Bounties are set per issue and are usually small.",
-    hours: "Per issue", fees: "Check the platform's current fee",
-    watch: "Low volume; treat it as portfolio building more than income",
-    src: [["Bounties", "https://issuehunt.io"]],
+    id: "toggl", name: "Toggl", url: "https://toggl.com/jobs", kind: "build", label: "Paid test week with the team",
+    test: "trial", difficulty: 3,
+    check: "India eligibility unconfirmed: 'we hire globally' across 43 countries, but check each posting.",
+    stages: [
+      { title: "Skills test", formats: ["takehome"], inside: "An online skills assessment or home assignment." },
+      { title: "Culture interview", formats: ["talk"], inside: "How you work and communicate." },
+      { title: "Technical interview", formats: ["talk"], inside: "With the team lead." },
+      { title: "Paid test week", formats: ["trial"], paid: true, time: "3–5 days", inside: "Real tasks with your future team." },
+    ],
+    prep: "Treat the test week like a first week on the job: ask questions early and ship small, finished pieces.",
+    after: "About a month from application to offer (Glassdoor).",
+    lo: null, hi: null, est: false,
+    pay: "Not published.",
+    watch: "Check each posting's location rules before applying.",
+    src: [["Jobs", "https://toggl.com/jobs"]],
   },
   {
-    id: "hackerearth", name: "HackerEarth hackathons", url: "https://www.hackerearth.com/challenges/", kind: "build", label: "Hiring hackathons, India",
-    test: "build", testLabel: "Ship a demo", difficulty: 2, dsa: "some", unverified: true,
-    entry: "Company-run hackathons where you build a prototype and top teams are shortlisted for interviews. Its separate hiring challenges are DSA tests.",
-    lo: null, hi: null, est: false, basis: "Prize money; hiring outcomes vary by company.",
-    hours: "Per event", fees: "Free to enter",
-    watch: "Many listings are India-office jobs paid in INR; pick hackathons run by global companies",
-    src: [["Challenges", "https://www.hackerearth.com/challenges/"]],
+    id: "algora", name: "Algora", url: "https://algora.io", kind: "build", label: "Bounty-to-hire at funded open-source companies",
+    test: "trial", difficulty: 3,
+    check: "Payouts go through Stripe Connect; reports say Indian recipients need a registered sole proprietorship, LLP or company. Unconfirmed for individuals.",
+    stages: [
+      { title: "Claim an issue", formats: [], inside: "Pick a funded issue at a company you'd actually join and comment /attempt." },
+      { title: "Merged PR", formats: ["trial", "codereview"], paid: true, inside: "The company's engineers review your fix and merge it into their real codebase. Bounties are typically $50–2,500, paid in 1–3 days." },
+      { title: "Contract work", formats: ["trial"], paid: true, inside: "Companies offer ongoing contract work to repeat contributors. Firecrawl, Trigger.dev, Activepieces, CodeRabbit and ComfyUI have hired this way." },
+      { title: "Full-time offer", formats: ["talk"], inside: "Some contracts convert. Algora also matches companies to developers for full-time roles." },
+    ],
+    prep: "Choose 3–5 target companies (Cal.com, Twenty, Trigger.dev, Activepieces, Firecrawl), read their contributing guides, and start with small, clean PRs.",
+    after: "Hiring comes from a track record of merged work, not from one bounty.",
+    lo: null, hi: null, est: false,
+    pay: "Per bounty, then contract rates set with each company.",
+    watch: "Bounties go to the first merged PR, so treat them as an audition with companies you'd join, not as income.",
+    src: [["Algora on GitHub", "https://github.com/algora-io/algora"], ["India payouts", "https://github.com/orgs/qdrant/discussions/2297"]],
   },
   {
-    id: "unstop", name: "Unstop", url: "https://unstop.com/hackathons", kind: "build", label: "Hackathons and hiring challenges, India",
-    test: "build", testLabel: "Ship a demo", difficulty: 2, dsa: "some", unverified: true,
-    entry: "Build-and-submit hackathons and case challenges run by companies; winners are fast-tracked to interviews.",
-    lo: null, hi: null, est: false, basis: "Prize money; jobs are mostly India-based.",
-    hours: "Per event", fees: "Free to enter",
-    watch: "Aimed at students and early-career; salaries are usually INR, not USD",
-    src: [["Hackathons", "https://unstop.com/hackathons"]],
+    id: "gitlab", name: "GitLab", url: "https://handbook.gitlab.com/handbook/hiring/interviewing/technical/", kind: "build", label: "Merge-request review interview",
+    test: "practical", difficulty: 3,
+    check: "Hires through GitLab India Pvt Ltd, so pay is almost certainly INR, not USD.",
+    stages: [
+      { title: "Recruiter screen", formats: ["talk"], inside: "Background and role fit." },
+      { title: "Merge request interview", formats: ["codereview", "live"], time: "1 hr prep + 90 min", inside: "You get a self-contained merge request about 72 hours ahead and review it (about an hour, unpaid). On the call you discuss your review and write code to improve it. AI use is allowed if you say so." },
+      { title: "Hiring manager", formats: ["talk"], inside: "Team and role fit." },
+      { title: "Leadership", formats: ["talk"], inside: "Final round." },
+    ],
+    prep: "Practise reviewing real merge requests for correctness, tests, naming, performance and security, written as specific comments, then pair on the fixes.",
+    after: "Employment through the India entity. Most open engineering roles are in the US, Canada or India.",
+    lo: null, hi: null, est: false,
+    pay: "INR; India pay bands are among the top of the market.",
+    watch: "Not USD.",
+    src: [["Technical interview", "https://handbook.gitlab.com/handbook/hiring/interviewing/technical/"], ["India entity", "https://handbook.gitlab.com/handbook/entity/india-pvt-ltd/"]],
   },
   {
-    id: "algora", name: "Algora", url: "https://algora.io", kind: "build", label: "Open-source bounties to hire",
-    test: "build", testLabel: "Merged PR", difficulty: 3, dsa: "no", unverified: true,
-    entry: "Companies put cash bounties on GitHub issues in their open-source repos. Get PRs merged, and companies use that track record to offer contracts and jobs.",
-    lo: null, hi: null, est: false, basis: "Paid per bounty; contract rates are set with each company.",
-    hours: "Per bounty, then contract", fees: "Check the platform's current terms",
-    watch: "Popular bounties draw many competing PRs; read the claim rules before you start",
-    src: [["Bounties", "https://algora.io"]],
+    id: "zapier", name: "Zapier", url: "https://zapier.com/l/jobs/interview-guide", kind: "build", label: "Take-home matched to real work",
+    test: "practical", difficulty: 3,
+    check: "Has India roles (a Release Engineering team in the India time zone, Apr 2026), but pay currency and employee vs contractor are unconfirmed; likely INR.",
+    stages: [
+      { title: "Application questions", formats: [], inside: "Written answers; a resume is optional." },
+      { title: "Recruiter and hiring manager", formats: ["talk"], inside: "Two conversations about your work." },
+      { title: "Skills interview", formats: ["takehome", "live"], inside: "A short take-home plus a live session with the hiring team, scored against a rubric and designed to match day-to-day work. Little DSA." },
+      { title: "Final interview and references", formats: ["talk"], inside: "Sometimes a final interview, then references and a background check." },
+    ],
+    prep: "Zapier publishes an interview guide; read it and practise explaining your take-home choices live.",
+    after: "Offer after references.",
+    lo: null, hi: null, est: false,
+    pay: "Not published; likely INR for India.",
+    watch: "Probably not USD.",
+    src: [["Interview guide", "https://zapier.com/l/jobs/interview-guide"], ["Jobs", "https://zapier.com/jobs"]],
   },
   {
-    id: "topcoder", name: "Topcoder", url: "https://www.topcoder.com", kind: "build", label: "Paid development challenges",
-    test: "build", testLabel: "Submit code", difficulty: 3, dsa: "some", unverified: true,
-    entry: "Clients post development challenges; you submit working code, reviewers score it and top submissions are paid. Its competitive programming track is pure DSA.",
-    lo: null, hi: null, est: false, basis: "Prize per challenge; amounts are on each challenge.",
-    hours: "Per challenge", fees: "Check the platform's current terms",
-    watch: "Several people build the same thing and only the top few are paid",
-    src: [["Challenges", "https://www.topcoder.com"]],
-  },
-  {
-    id: "nowhiteboard", name: "Hiring Without Whiteboards", url: "https://github.com/poteto/hiring-without-whiteboards", kind: "build", label: "List of take-home companies",
-    test: "build", testLabel: "Take-home project", difficulty: 3, dsa: "no", unverified: true,
-    entry: "A community list of companies whose interviews use take-home projects or pairing on real problems instead of algorithm puzzles. Use it to filter the job boards.",
-    lo: null, hi: null, est: false, basis: "Salary set by each employer.",
-    hours: "Full-time or contract, per company", fees: "Free",
-    watch: "It doesn't say who hires from India; check each company's location rules",
-    src: [["The list", "https://github.com/poteto/hiring-without-whiteboards"]],
-  },
-  {
-    id: "worktrials", name: "Paid work-trial companies", url: "https://automattic.com/work-with-us/", kind: "build", label: "Hire by paid trial project",
-    test: "build", testLabel: "Paid trial", difficulty: 4, dsa: "no", unverified: true,
-    entry: "Some all-remote companies (Automattic, PostHog and others) replace most interview rounds with a short paid trial on real work.",
-    lo: null, hi: null, est: false, basis: "The trial is paid; salary set by each company.",
-    hours: "Trial of a few days to weeks, then full-time", fees: "None",
-    watch: "Fewer openings than the job boards, and you still need to pass a first screen",
-    src: [["Automattic", "https://automattic.com/work-with-us/"], ["PostHog", "https://posthog.com/careers"]],
+    id: "doist", name: "Doist", url: "https://www.todoist.com/careers", kind: "build", label: "Todoist; test task before team interviews",
+    test: "practical", difficulty: 3,
+    check: "India eligibility unconfirmed but plausible: no location restrictions, and pay is location-adjusted.",
+    stages: [
+      { title: "Long-form application", formats: [], inside: "Detailed written answers." },
+      { title: "Interview", formats: ["talk"], inside: "Google Meet; the salary range is shared up front." },
+      { title: "Test task", formats: ["takehome"], time: "about 10 hrs", inside: "A real-world engineering task. Older accounts say it's paid; the current page doesn't confirm it." },
+      { title: "Team interviews", formats: ["talk"], inside: "With the people you'd work with." },
+      { title: "References and hiring committee", formats: [], inside: "Final decision." },
+    ],
+    prep: "Write a careful application; the process favours clear written communication.",
+    after: "Offer after the hiring committee.",
+    lo: null, hi: null, est: false,
+    pay: "Location-adjusted salary, which may land lower for India; not published.",
+    watch: "Location-adjusted pay.",
+    src: [["Careers", "https://www.todoist.com/careers"]],
   },
 ];
+
+export interface Board {
+  id: string;
+  name: string;
+  url: string;
+  note: string;
+  cost: string;
+  mix: "startup" | "bigco";
+  rank: number;
+}
+
+export const LOOPS: Record<Board["mix"], { title: string; stages: Stage[] }> = {
+  startup: {
+    title: "Startup loop",
+    stages: [
+      { title: "Recruiter or founder call", formats: ["talk"], time: "30 min", inside: "Background, why this company, salary range." },
+      { title: "Take-home or practical pairing", formats: ["takehome", "live"], time: "2–4 hrs typical", inside: "A small feature or bug fix in a realistic codebase, or pairing on one." },
+      { title: "Architecture chat", formats: ["sysdesign"], inside: "Walk through a system you built and how you'd scale it." },
+      { title: "Team and culture", formats: ["talk"], inside: "Meeting the people you'd work with." },
+    ],
+  },
+  bigco: {
+    title: "Larger-company loop",
+    stages: [
+      { title: "Online assessment", formats: ["dsa"], dsa: "medium", time: "60–90 min", inside: "2–3 LeetCode-style problems on HackerRank or CodeSignal." },
+      { title: "Live coding rounds", formats: ["live", "dsa"], dsa: "medium", time: "45–60 min each", inside: "One or two rounds of algorithm problems with an interviewer." },
+      { title: "System design", formats: ["sysdesign"], time: "45–60 min", inside: "Design a service end to end: APIs, storage, scaling, failure modes." },
+      { title: "Behavioral", formats: ["talk"], inside: "Past projects, conflict, ownership." },
+    ],
+  },
+};
 
 export const BOARDS: Board[] = [
-  { id: "wellfound", name: "Wellfound", url: "https://wellfound.com/remote", note: "Set your profile location to India and it shows remote roles you're eligible for. Also try the 'Distributed teams only' toggle.", cost: "Free", mix: "startup", researchRank: 1 },
-  { id: "yc", name: "Y Combinator Work at a Startup", url: "https://www.workatastartup.com", note: "Log in, filter by remote and location; look for roles tagged 'Remote (IN)'. Has Forward Deployed roles.", cost: "Free", mix: "startup", researchRank: 2 },
-  { id: "fde", name: "Forward Deployed job boards", url: "https://fdejobs.com", note: "fdejobs.com and fde.traversaal.ai list only FD roles (US, EU and India). Newer, niche boards.", cost: "Free", mix: "startup", researchRank: 3 },
-  { id: "hn", name: "Hacker News 'Who is hiring'", url: "https://news.ycombinator.com/item?id=49922569", note: "Monthly thread. Look for posts marked REMOTE without a country limit; most remote posts are US or EU only.", cost: "Free", mix: "startup", researchRank: 11 },
-  { id: "himalayas", name: "Himalayas", url: "https://himalayas.app/jobs/countries/india", note: "Country, worldwide-only and timezone filters.", cost: "Free", mix: "mixed", researchRank: 4 },
-  { id: "linkedin", name: "LinkedIn Jobs", url: "https://www.linkedin.com/jobs/search/?f_WT=2&geoId=92000000", note: "Remote + Worldwide search. Many 'remote' jobs are still locked to one country, so read the location line.", cost: "Free", mix: "mixed", researchRank: 5 },
-  { id: "jobgether", name: "Jobgether", url: "https://jobgether.com/remote-jobs/india", note: "Filter by 'open to candidates in India'.", cost: "Free, 5 matches a week; about $29/month for more", mix: "mixed", researchRank: 6 },
-  { id: "remoteok", name: "RemoteOK", url: "https://remoteok.com", note: "Regions: Worldwide. Every post must show a salary range.", cost: "Free to apply", mix: "mixed", researchRank: 7 },
-  { id: "wwr", name: "We Work Remotely", url: "https://weworkremotely.com/100-percent-remote-jobs", note: "'Anywhere in the World' tag (set by the employer, not checked).", cost: "Free basic; Pro $14.95/month", mix: "mixed", researchRank: 8 },
-  { id: "remotive", name: "Remotive", url: "https://remotive.com/remote-worldwide-jobs", note: "'Available from my location' filter includes Worldwide jobs.", cost: "Free tier shows only some jobs; paid plans", mix: "mixed", researchRank: 9 },
-  { id: "rwfa", name: "Real Work From Anywhere and Relomote", url: "https://www.realworkfromanywhere.com/", note: "Boards that list only worldwide roles.", cost: "Free", mix: "mixed", researchRank: 10 },
-  { id: "nomads", name: "Working Nomads, Remote Rocketship, FlexJobs", url: "https://www.workingnomads.com/remote-india-jobs", note: "All have India pages, but full results are behind paid plans. Optional.", cost: "Paid", mix: "mixed", researchRank: 12 },
+  { id: "wellfound", name: "Wellfound", url: "https://wellfound.com/remote", note: "Set your profile location to India and it shows remote roles you're eligible for. Also try the 'Distributed teams only' toggle.", cost: "Free", mix: "startup", rank: 1 },
+  { id: "yc", name: "Y Combinator Work at a Startup", url: "https://www.workatastartup.com", note: "Log in, filter by remote and location; look for roles tagged 'Remote (IN)'. Has Forward Deployed roles.", cost: "Free", mix: "startup", rank: 2 },
+  { id: "fde", name: "Forward Deployed job boards", url: "https://fdejobs.com", note: "fdejobs.com and fde.traversaal.ai list only FD roles (US, EU and India). Newer, niche boards.", cost: "Free", mix: "startup", rank: 3 },
+  { id: "hww", name: "Hiring Without Whiteboards", url: "https://github.com/poteto/hiring-without-whiteboards", note: "A maintained list of companies that interview with take-homes or real problems instead of puzzles. Most are US or EU, so check each company's location rules.", cost: "Free", mix: "startup", rank: 4 },
+  { id: "hn", name: "Hacker News 'Who is hiring'", url: "https://news.ycombinator.com/item?id=49922569", note: "Monthly thread. Look for posts marked REMOTE without a country limit; most remote posts are US or EU only.", cost: "Free", mix: "startup", rank: 5 },
+  { id: "himalayas", name: "Himalayas", url: "https://himalayas.app/jobs/countries/india", note: "Country, worldwide-only and timezone filters.", cost: "Free", mix: "bigco", rank: 6 },
+  { id: "linkedin", name: "LinkedIn Jobs", url: "https://www.linkedin.com/jobs/search/?f_WT=2&geoId=92000000", note: "Remote + Worldwide search. Many 'remote' jobs are still locked to one country, so read the location line.", cost: "Free", mix: "bigco", rank: 7 },
+  { id: "jobgether", name: "Jobgether", url: "https://jobgether.com/remote-jobs/india", note: "Filter by 'open to candidates in India'.", cost: "Free, 5 matches a week; about $29/month for more", mix: "bigco", rank: 8 },
+  { id: "remoteok", name: "RemoteOK", url: "https://remoteok.com", note: "Regions: Worldwide. Every post must show a salary range.", cost: "Free to apply", mix: "bigco", rank: 9 },
+  { id: "wwr", name: "We Work Remotely", url: "https://weworkremotely.com/100-percent-remote-jobs", note: "'Anywhere in the World' tag (set by the employer, not checked).", cost: "Free basic; Pro $14.95/month", mix: "bigco", rank: 10 },
+  { id: "remotive", name: "Remotive", url: "https://remotive.com/remote-worldwide-jobs", note: "'Available from my location' filter includes Worldwide jobs.", cost: "Free tier shows only some jobs; paid plans", mix: "bigco", rank: 11 },
+  { id: "rwfa", name: "Real Work From Anywhere and Relomote", url: "https://www.realworkfromanywhere.com/", note: "Boards that list only worldwide roles.", cost: "Free", mix: "bigco", rank: 12 },
 ];
 
-export const SKIP: [string, string][] = [
-  ["Proxify", "Time-zone rule (GMT+4 to GMT−10) leaves out India"],
-  ["Lemon.io", "Doesn't accept most Asian countries"],
-  ["Terminal", "Canada, Latin America and Europe only"],
-  ["Revelo", "Latin America only"],
-  ["Index.dev", "Latin America and Central/Eastern Europe"],
-  ["BairesDev", "Latin America focused"],
-  ["DataAnnotation", "US, Canada, UK, Ireland, Australia, New Zealand"],
-  ["Snorkel expert network", "US-based contractors only"],
-  ["Prolific", "Not open to new sign-ups from India"],
-  ["Gun.io", "Favors US and EU developers"],
-  ["Malt", "Europe and UAE; needs a registered business"],
-  ["Workana", "Mostly Latin American clients"],
-  ["Talent500", "Jobs at India offices, paid in INR"],
-  ["Pesto", "Shut down in 2025"],
-  ["A.Team, X-Team, Contra", "India eligibility unverified; check before testing"],
+export const DROPPED: { title: string; items: Dropped[] }[] = [
+  {
+    title: "Tier systems, low pay or unpaid-work complaints",
+    items: [
+      { name: "Outlier (Scale AI)", why: "Tier and per-project qualification gates fail most people, with 30-day lockouts; India coding pays $13.75–27.50/hr; unexplained removals" },
+      { name: "Alignerr", why: "Credible reports of unpaid hours (one: 65 hours, Sept 2026) and an F rating on BBB" },
+      { name: "Mindrift (Toloka)", why: "Pay is location-based ($20–40/hr reported for India) and work comes and goes" },
+      { name: "Invisible / Meridial", why: "Location-based pay, roughly $6–20/hr for India; sudden cancellations" },
+      { name: "Deccan AI / Soul AI", why: "Priced for India, mostly non-coding rubric work, complaints about unpaid assessments" },
+      { name: "Handshake AI", why: "India role is invite-only and capped at $25/hr" },
+      { name: "Braintrust", why: "Mostly reposts AI-data jobs from Turing and Outlier; fake-client malware scams; Trustpilot 1.7/5" },
+    ],
+  },
+  {
+    title: "Not USD, or not really placing people",
+    items: [
+      { name: "Uplers", why: "Sells Indian developers to clients at a discount (about $1,900/month for an experienced engineer)" },
+      { name: "Flexiple", why: "Pivoted to offshore teams on Indian payroll" },
+      { name: "Supersourcing", why: "Indian staffing; its own pages put engineers at $6–14K a year" },
+      { name: "Gigster", why: "Sold to Virtasant in 2024; no sign the network still places developers" },
+    ],
+  },
+  {
+    title: "Cheap marketplaces and contests",
+    items: [
+      { name: "Fiverr, Freelancer.com, Guru, PeoplePerHour", why: "Compete on price; fastest, cheapest bids win" },
+      { name: "Codementor", why: "Side income at most: 20% cut and sporadic demand" },
+      { name: "Devpost, HackerEarth, Unstop, Topcoder, IssueHunt, Superteam Earn", why: "Contests and prize bounties, not client hiring" },
+      { name: "Gumroad", why: "Its no-interview paid part-time model ended; now a New York office" },
+      { name: "Replit Bounties", why: "Shut down September 2025" },
+      { name: "Working Nomads, Remote Rocketship, FlexJobs", why: "Paywalled copies of free boards" },
+    ],
+  },
+  {
+    title: "Good process, but not open to India",
+    items: [
+      { name: "PostHog", why: "Paid SuperDay, but hires only GMT−8 to GMT+2" },
+      { name: "Linear", why: "Paid work trial, but engineering roles are US and Europe only" },
+      { name: "37signals", why: "Americas or Europe only" },
+      { name: "Ghost", why: "Paid trial, but UTC−1 to UTC+3 only" },
+      { name: "Close", why: "Engineering roles US only" },
+      { name: "Proxify", why: "Time-zone rule (GMT+4 to GMT−10) leaves out India" },
+      { name: "Lemon.io", why: "Doesn't accept most Asian countries" },
+      { name: "Terminal, Revelo, Index.dev, BairesDev, Workana", why: "Latin America, Canada or Europe focused" },
+      { name: "DataAnnotation, Snorkel, Prolific", why: "US or a short list of countries; Prolific closed to new India sign-ups" },
+      { name: "Gun.io, Malt, Talent500", why: "US/EU-focused, needs an EU business, or pays INR at India offices" },
+      { name: "A.Team, X-Team, Contra", why: "India eligibility unverified; A.Team and Contra don't select on real work" },
+      { name: "Pesto", why: "Shut down in 2025" },
+    ],
+  },
 ];
 
 export const REALITY: { value: string; label: string; you?: boolean }[] = [
   { value: "$22K/yr", label: "India median, engineering roles on Deel (2025)" },
-  { value: "$36–48K/yr", label: "Senior engineers via Uplers; AI/ML up to $72K+" },
   { value: "$48.9K/yr", label: "What India remote developers expect on Arc (average)" },
-  { value: "$60–96K/yr", label: "Your target ($5–8K a month), above every median", you: true },
+  { value: "$100K/yr", label: "Crossover's fixed rate for standard engineering roles, any country" },
+  { value: "$60–96K/yr", label: "Your target ($5–8K a month)", you: true },
 ];
 
-/** Easiest entry first: difficulty, then test type, then the research's overall ease rank. */
+export function maxDsa(stages: Stage[]): Dsa {
+  let best: Dsa = "none";
+  for (const s of stages) if (s.dsa && DSA_ORDER[s.dsa] > DSA_ORDER[best]) best = s.dsa;
+  return best;
+}
+
+/** Formats a reader has to be ready for, DSA excluded (it has its own level). */
+export function needsOf(stages: Stage[]): Format[] {
+  const used = new Set(stages.flatMap((s) => s.formats));
+  return FORMATS.map((f) => f.id).filter((f) => f !== "dsa" && used.has(f));
+}
+
+/** Easiest entry first: difficulty, then kind of gate, then DSA level. */
 export function byEntry(a: Platform, b: Platform) {
-  const da = a.difficulty ?? 6;
-  const db = b.difficulty ?? 6;
-  if (da !== db) return da - db;
+  if (a.difficulty !== b.difficulty) return a.difficulty - b.difficulty;
   if (a.test !== b.test) return TEST_ORDER[a.test] - TEST_ORDER[b.test];
-  return (a.researchRank ?? 99) - (b.researchRank ?? 99);
+  const d = DSA_ORDER[maxDsa(a.stages)] - DSA_ORDER[maxDsa(b.stages)];
+  return d || a.name.localeCompare(b.name);
 }
 
 export function byPay(a: Platform, b: Platform) {
   const va = a.hi == null ? -1 : a.hi + (a.lo ?? 0) / 1e5;
   const vb = b.hi == null ? -1 : b.hi + (b.lo ?? 0) / 1e5;
   return vb - va || byEntry(a, b);
-}
-
-export function boardsByEntry(a: Board, b: Board) {
-  if (a.mix !== b.mix) return a.mix === "startup" ? -1 : 1;
-  return a.researchRank - b.researchRank;
 }

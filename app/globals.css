@@ -12,12 +12,11 @@
   --build: #962a70;
 
   --t-open: #e2e7ed;
-  --t-review: #d2dae3;
-  --t-ai: #bfcad8;
-  --t-build: #a7b6c9;
-  --t-practical: #8a9eb7;
-  --t-live: #677f9e;
-  --t-dsa: #475f84;
+  --t-ai: #ccd5e0;
+  --t-practical: #b2c0d1;
+  --t-trial: #94a7be;
+  --t-live: #6f87a5;
+  --t-dsa: #4a6287;
   --t-aptitude: #273e63;
 
   --display: "Avenir Next Condensed", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
@@ -139,13 +138,13 @@ h3 {
 }
 
 .ladder {
-  min-width: 1060px;
+  min-width: 900px;
   display: grid;
 }
 
 .ladder-row {
   display: grid;
-  grid-template-columns: 11rem repeat(9, minmax(0, 1fr));
+  grid-template-columns: 11rem repeat(7, minmax(0, 1fr));
 }
 
 .ladder-top {
@@ -190,13 +189,6 @@ h3 {
   line-height: 1.1;
   border-radius: 6px 6px 0 0;
   margin-right: 2px;
-}
-
-.ladder-col.t-invite {
-  background: transparent;
-  border: 1.5px dashed var(--muted);
-  border-bottom: 0;
-  color: var(--muted);
 }
 
 .ladder-kind {
@@ -246,7 +238,7 @@ h3 {
 }
 
 .ladder-span {
-  grid-column: span 3;
+  grid-column: span 4;
   align-items: center;
 }
 
@@ -271,14 +263,12 @@ h3 {
 
 /* Test tags share the ladder's ramp so a tag's darkness means the same thing everywhere. */
 .t-open { background: var(--t-open); }
-.t-review { background: var(--t-review); }
 .t-ai { background: var(--t-ai); }
-.t-build { background: var(--t-build); }
 .t-practical { background: var(--t-practical); }
+.t-trial { background: var(--t-trial); }
 .t-live { background: var(--t-live); color: #fff; }
 .t-dsa { background: var(--t-dsa); color: #fff; }
 .t-aptitude { background: var(--t-aptitude); color: #fff; }
-.t-invite { background: transparent; border: 1.5px dashed var(--muted); }
 
 /* Pay reality */
 
@@ -394,7 +384,8 @@ h3 {
   border-left: 1px solid var(--ink);
 }
 
-.seg button[aria-pressed="true"] {
+.seg button[aria-pressed="true"],
+.seg button[aria-checked="true"] {
   background: var(--ink);
   color: #fff;
 }
@@ -515,7 +506,7 @@ h3 {
 .row,
 .board {
   display: grid;
-  grid-template-columns: 2rem minmax(12rem, 1.5fr) 10.5rem 6.5rem 6.5rem minmax(11rem, 1.1fr) 1.25rem;
+  grid-template-columns: 2rem minmax(11rem, 1.4fr) 9.5rem 5.25rem 6.75rem 7.5rem minmax(10rem, 1fr) 1.25rem;
   align-items: center;
   gap: 8px 16px;
   padding: 12px 16px;
@@ -536,6 +527,8 @@ h3 {
 
 .row::after {
   content: "";
+  grid-row: 1;
+  grid-column: -2 / -1;
   width: 9px;
   height: 9px;
   justify-self: end;
@@ -646,16 +639,20 @@ a.name {
   color: var(--muted);
 }
 
-.dsa-yes {
-  color: #a3271f;
-}
-
-.dsa-some {
-  color: #8a5a00;
-}
-
-.dsa-no {
+.dsa-none {
   color: var(--vetted);
+}
+
+.dsa-easy {
+  color: #5d6b00;
+}
+
+.dsa-medium {
+  color: #9a5b00;
+}
+
+.dsa-hard {
+  color: #a3271f;
 }
 
 .pay {
@@ -805,23 +802,349 @@ a.name {
   margin: 8px 0 0;
 }
 
+/* Prep picker */
+
+.prep {
+  margin-top: 8px;
+}
+
+.prep > h2 {
+  font-size: clamp(1.8rem, 3.4vw, 2.4rem);
+  font-weight: 800;
+}
+
+.prep-lede {
+  margin: 6px 0 0;
+  color: var(--muted);
+  max-width: 68ch;
+}
+
+.prep-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 20px 40px;
+  margin-top: 18px;
+  padding: 20px 22px;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+}
+
+.prep-grid h3 {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.seg-dsa {
+  flex-wrap: wrap;
+  border-radius: 10px;
+}
+
+.seg-dsa button {
+  padding: 7px 12px;
+}
+
+.hint {
+  margin: 10px 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  max-width: 52ch;
+}
+
+.fmt-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.fmt-chips button {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 5px 11px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.fmt-chips button[aria-pressed="true"] {
+  background: var(--vetted);
+  border-color: var(--vetted);
+  color: #fff;
+}
+
+.fmt-chips button[aria-pressed="true"]::before {
+  content: "\2713\00a0";
+}
+
+.prep-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  margin-top: 12px;
+}
+
+button.link {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--boards);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.prep-sum {
+  margin: 12px 0 0;
+  font-size: 0.95rem;
+}
+
+.bar-ready {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--vetted);
+}
+
+/* Readiness */
+
+.ready {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  justify-self: start;
+  white-space: nowrap;
+}
+
+.ready.ok {
+  background: #dcefe9;
+  color: var(--vetted);
+}
+
+.ready.gap {
+  background: #f6ead6;
+  color: #8a5300;
+}
+
+/* Pipeline strip on the collapsed row */
+
+.strip {
+  grid-column: 2 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.strip li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.76rem;
+  line-height: 1.2;
+  padding: 2px 8px 2px 3px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: #fff;
+}
+
+.strip .n,
+.pipeline .n {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--k);
+  color: #fff;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.strip .n {
+  width: 16px;
+  height: 16px;
+  font-size: 0.68rem;
+}
+
+.strip li.dsa-medium,
+.strip li.dsa-easy {
+  border-color: #d9a650;
+}
+
+.strip li.dsa-hard {
+  border-color: #c4554d;
+}
+
+/* Full pipeline in the expanded row */
+
+.more-h {
+  font-size: 1.15rem;
+  margin: 12px 0 10px;
+}
+
+.pipeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 82ch;
+}
+
+.pipeline li {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 12px;
+  position: relative;
+  padding-bottom: 14px;
+}
+
+.pipeline li:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 26px;
+  bottom: 0;
+  width: 2px;
+  background: var(--rule);
+}
+
+.pipeline .n {
+  width: 26px;
+  height: 26px;
+  font-size: 0.8rem;
+}
+
+.pipeline h4 {
+  margin: 2px 0 0;
+  font-size: 0.98rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+
+.time {
+  font-weight: 400;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.fmts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 5px 0 0;
+}
+
+.fmt,
+.flag {
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: #e7ecf1;
+}
+
+.fmt.todo {
+  background: #f6ead6;
+  color: #8a5300;
+}
+
+.flag {
+  background: transparent;
+  border: 1px solid var(--muted);
+  color: var(--muted);
+}
+
+.flag.paid {
+  border-color: var(--vetted);
+  color: var(--vetted);
+}
+
+.inside {
+  margin: 5px 0 0;
+  font-size: 0.9rem;
+}
+
+.check {
+  margin: 12px 0 0;
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  border-left: 3px solid #c48a1b;
+  background: #fbf5e8;
+  max-width: 82ch;
+}
+
+.gaps {
+  margin: 0 0 14px;
+  font-size: 0.9rem;
+  color: #8a5300;
+  max-width: 82ch;
+}
+
+/* Job-board loops */
+
+.loops {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.loop {
+  padding: 16px 18px 4px;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+}
+
+.loop h3 {
+  font-size: 1.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-bottom: 12px;
+}
+
+.loop h3 .dsa,
+.loop h3 .ready {
+  font-family: var(--body);
+}
+
+.drop-group h3 {
+  font-size: 1.15rem;
+  margin-top: 22px;
+}
+
 /* Small screens */
 
 @media (max-width: 860px) {
+  .prep-grid {
+    grid-template-columns: 1fr;
+  }
+
   .row {
     grid-template-columns: 2rem 1fr auto;
     grid-template-areas:
       "rank who chev"
-      ". test test"
+      ". test ready"
       ". steps dsa"
-      ". pay pay";
+      ". pay pay"
+      ". strip strip";
   }
+
+  .row .ready { grid-area: ready; justify-self: start; }
+  .row .strip { grid-area: strip; }
 
   .row .rank { grid-area: rank; }
   .row .who { grid-area: who; }
   .row .test { grid-area: test; }
-  .row .steps,
-  .row .steps-none { grid-area: steps; }
+  .row .steps { grid-area: steps; }
   .row .dsa { grid-area: dsa; justify-self: start; }
   .row .pay { grid-area: pay; }
   .row::after { grid-area: chev; align-self: start; margin-top: 8px; }
@@ -883,6 +1206,10 @@ a.name {
   .controls {
     width: 100%;
     gap: 6px 12px;
+  }
+
+  .bar-ready {
+    display: none;
   }
 
   .seg button {

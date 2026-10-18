@@ -3,30 +3,44 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   BOARDS,
+  DSA_LABEL,
+  DSA_ORDER,
+  FORMATS,
   KINDS,
+  LOOPS,
   PLATFORMS,
   TESTS,
-  boardsByEntry,
   byEntry,
   byPay,
-  type Kind,
-  type Platform,
+  maxDsa,
+  needsOf,
 } from "@/lib/data";
+import type { Dsa, Format, Kind, Platform, Stage } from "@/lib/types";
 
 type Sort = "easy" | "hard" | "pay";
 
 const MAX = 10000;
 const fmt = (n: number) => "$" + n.toLocaleString("en-US");
 const pct = (v: number) => Math.min(100, (v / MAX) * 100);
-const testLabel = (p: Platform) => p.testLabel ?? TESTS.find((t) => t.id === p.test)!.label;
-const isHardGate = (p: Platform) => p.test === "dsa" || p.test === "aptitude" || p.dsa === "yes";
+const fmtLabel = (f: Format) => FORMATS.find((x) => x.id === f)!.label;
+const testLabel = (p: Platform) => TESTS.find((t) => t.id === p.test)!.label;
+/** Format chips the reader can tick. DSA has its own level picker. */
+const PREP_FORMATS = FORMATS.filter((f) => f.id !== "dsa");
 
-const DSA_TEXT = { yes: "Required", some: "Partly", no: "No" } as const;
+interface Prep {
+  dsa: Dsa;
+  formats: Set<Format>;
+}
 
-function Steps({ level }: { level: number | null }) {
-  if (level == null) {
-    return <span className="steps-none">Can&apos;t apply</span>;
-  }
+function missing(stages: Stage[], prep: Prep): string[] {
+  const out: string[] = [];
+  const level = maxDsa(stages);
+  if (DSA_ORDER[level] > DSA_ORDER[prep.dsa]) out.push(`${DSA_LABEL[level]} DSA`);
+  for (const f of needsOf(stages)) if (!prep.formats.has(f)) out.push(fmtLabel(f));
+  return out;
+}
+
+function Steps({ level }: { level: number }) {
   return (
     <span className="steps" role="img" aria-label={`Entry difficulty ${level} of 5`}>
       {[1, 2, 3, 4, 5].map((i) => (
@@ -37,11 +51,28 @@ function Steps({ level }: { level: number | null }) {
   );
 }
 
+function DsaBadge({ level }: { level: Dsa }) {
+  return (
+    <span className={`dsa dsa-${level}`}>
+      <span className="dsa-k">DSA</span> {DSA_LABEL[level]}
+    </span>
+  );
+}
+
+function Ready({ gaps }: { gaps: string[] }) {
+  if (!gaps.length) return <span className="ready ok">Ready</span>;
+  return (
+    <span className="ready gap" title={`Still to prepare: ${gaps.join(", ")}`}>
+      Prepare {gaps.length} more
+    </span>
+  );
+}
+
 function Pay({ p }: { p: Platform }) {
   if (p.lo == null || p.hi == null) {
     return (
       <span className="pay">
-        <strong className="pay-none">{p.unverified ? "Per bounty or prize" : "Not published"}</strong>
+        <strong className="pay-none">Set per company</strong>
       </span>
     );
   }
@@ -66,7 +97,55 @@ function Pay({ p }: { p: Platform }) {
   );
 }
 
-function Row({ p, rank }: { p: Platform; rank: number }) {
+/** Compact stage strip shown on the collapsed row. */
+function Strip({ stages }: { stages: Stage[] }) {
+  return (
+    <ol className="strip" aria-label="Test pipeline">
+      {stages.map((s, i) => (
+        <li key={i} className={s.dsa ? `has-dsa dsa-${s.dsa}` : undefined}>
+          <span className="n">{i + 1}</span>
+          {s.title}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function Pipeline({ stages, gaps }: { stages: Stage[]; gaps: Prep }) {
+  return (
+    <ol className="pipeline">
+      {stages.map((s, i) => (
+        <li key={i}>
+          <span className="n" aria-hidden="true">
+            {i + 1}
+          </span>
+          <div>
+            <h4>
+              {s.title}
+              {s.time && <span className="time">{s.time}</span>}
+            </h4>
+            <p className="fmts">
+              {s.formats.map((f) => (
+                <span
+                  key={f}
+                  className={`fmt${f !== "dsa" && !gaps.formats.has(f) ? " todo" : ""}`}
+                >
+                  {f === "dsa" && s.dsa ? `${DSA_LABEL[s.dsa]} DSA` : fmtLabel(f)}
+                </span>
+              ))}
+              {s.proctored && <span className="flag">Proctored</span>}
+              {s.paid && <span className="flag paid">Paid</span>}
+            </p>
+            <p className="inside">{s.inside}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function Row({ p, rank, prep }: { p: Platform; rank: number; prep: Prep }) {
+  const gaps = missing(p.stages, prep);
   return (
     <li id={p.id} className="row-item">
       <details>
@@ -80,21 +159,33 @@ function Row({ p, rank }: { p: Platform; rank: number }) {
             <span className={`tag t-${p.test}`}>{testLabel(p)}</span>
           </span>
           <Steps level={p.difficulty} />
-          <span className={`dsa dsa-${p.dsa}`}>
-            <span className="dsa-k">DSA</span> {DSA_TEXT[p.dsa]}
-          </span>
+          <DsaBadge level={maxDsa(p.stages)} />
+          <Ready gaps={gaps} />
           <Pay p={p} />
+          <Strip stages={p.stages} />
         </summary>
         <div className="more">
+          {p.check && <p className="check">{p.check}</p>}
+          <h3 className="more-h">Test pipeline</h3>
+          <Pipeline stages={p.stages} gaps={prep} />
+          {gaps.length > 0 && (
+            <p className="gaps">
+              <b>Still to prepare for this one:</b> {gaps.join(", ")}
+            </p>
+          )}
           <dl>
-            <dt>Entry</dt>
-            <dd>{p.entry}</dd>
-            <dt>Pay basis</dt>
-            <dd>{p.basis}</dd>
-            <dt>Hours</dt>
-            <dd>{p.hours}</dd>
-            <dt>Fees</dt>
-            <dd>{p.fees}</dd>
+            <dt>How to prepare</dt>
+            <dd>{p.prep}</dd>
+            {p.retake && (
+              <>
+                <dt>If you fail</dt>
+                <dd>{p.retake}</dd>
+              </>
+            )}
+            <dt>After you pass</dt>
+            <dd>{p.after}</dd>
+            <dt>Pay</dt>
+            <dd>{p.pay}</dd>
             <dt className="watch">Watch out</dt>
             <dd className="watch">{p.watch}</dd>
           </dl>
@@ -109,7 +200,6 @@ function Row({ p, rank }: { p: Platform; rank: number }) {
                   {t}
                 </a>
               ))}
-            {p.researchRank && <span className="rr">Overall ease rank {p.researchRank} of 25</span>}
           </p>
         </div>
       </details>
@@ -117,19 +207,18 @@ function Row({ p, rank }: { p: Platform; rank: number }) {
   );
 }
 
-function RowList({ items }: { items: Platform[] }) {
+function RowList({ items, prep }: { items: Platform[]; prep: Prep }) {
   if (!items.length) {
     return (
       <p className="empty">
-        Every platform here uses a DSA or aptitude test. Turn off &ldquo;Hide DSA and aptitude
-        tests&rdquo; to see them.
+        Nothing here matches your prep yet. Raise your DSA level or tick more test types above.
       </p>
     );
   }
   return (
     <ol className="rows">
       {items.map((p, i) => (
-        <Row key={p.id} p={p} rank={i + 1} />
+        <Row key={p.id} p={p} rank={i + 1} prep={prep} />
       ))}
     </ol>
   );
@@ -149,7 +238,10 @@ function SectionHead({ kind, count }: { kind: Kind; count: number }) {
 
 export default function Directory() {
   const [sort, setSort] = useState<Sort>("easy");
-  const [hideHard, setHideHard] = useState(false);
+  const [dsa, setDsa] = useState<Dsa>("hard");
+  const [formats, setFormats] = useState<Set<Format>>(() => new Set());
+  const [onlyReady, setOnlyReady] = useState(false);
+  const prep: Prep = useMemo(() => ({ dsa, formats }), [dsa, formats]);
 
   // Open a row's details when the URL hash points at it (from the ladder chips).
   useEffect(() => {
@@ -163,33 +255,116 @@ export default function Directory() {
     return () => window.removeEventListener("hashchange", open);
   }, []);
 
-  const list = useMemo(() => {
+  const toggle = (f: Format) =>
+    setFormats((prev) => {
+      const next = new Set(prev);
+      if (next.has(f)) next.delete(f);
+      else next.add(f);
+      return next;
+    });
+
+  const keep = (stages: Stage[]) => {
+    if (DSA_ORDER[maxDsa(stages)] > DSA_ORDER[dsa]) return false;
+    return !onlyReady || missing(stages, prep).length === 0;
+  };
+
+  const list = (() => {
     const cmp =
       sort === "pay" ? byPay : sort === "hard" ? (a: Platform, b: Platform) => byEntry(b, a) : byEntry;
     const pick = (f: (p: Platform) => boolean) =>
-      PLATFORMS.filter((p) => f(p) && !(hideHard && isHardGate(p))).sort(cmp);
+      PLATFORMS.filter((p) => f(p) && keep(p.stages)).sort(cmp);
     return {
       freelance: pick((p) => p.kind === "freelance"),
       dev: pick((p) => p.kind === "vetted" && p.group === "dev"),
       ai: pick((p) => p.kind === "vetted" && p.group === "ai"),
       build: pick((p) => p.kind === "build"),
     };
-  }, [sort, hideHard]);
+  })();
 
-  const boards = useMemo(() => {
-    const b = [...BOARDS].sort(boardsByEntry);
+  const boards = (() => {
+    const b = BOARDS.filter((x) => keep(LOOPS[x.mix].stages)).sort((a, z) =>
+      a.mix !== z.mix ? (a.mix === "startup" ? -1 : 1) : a.rank - z.rank,
+    );
     return sort === "hard" ? b.reverse() : b;
-  }, [sort]);
+  })();
 
   const counts: Record<Kind, number> = {
     freelance: list.freelance.length,
-    boards: BOARDS.length,
+    boards: boards.length,
     vetted: list.dev.length + list.ai.length,
     build: list.build.length,
   };
 
+  const total = PLATFORMS.length;
+  const readyCount = PLATFORMS.filter(
+    (p) => DSA_ORDER[maxDsa(p.stages)] <= DSA_ORDER[dsa] && missing(p.stages, prep).length === 0,
+  ).length;
+
   return (
     <div className="directory">
+      <section className="wrap prep" aria-labelledby="prep-h">
+        <h2 id="prep-h">What have you prepared for?</h2>
+        <p className="prep-lede">
+          Pick the hardest DSA you can handle and tick the test types you&apos;re ready for. Every
+          platform below then shows whether you&apos;re ready or what&apos;s still missing, stage by
+          stage.
+        </p>
+        <div className="prep-grid">
+          <div>
+            <h3 id="dsa-h">DSA level</h3>
+            <div className="seg seg-dsa" role="radiogroup" aria-labelledby="dsa-h">
+              {(["none", "easy", "medium", "hard"] as const).map((d) => (
+                <button
+                  key={d}
+                  type="button"
+                  role="radio"
+                  aria-checked={dsa === d}
+                  onClick={() => setDsa(d)}
+                >
+                  {d === "none" ? "No DSA" : d === "hard" ? "Hard (show all)" : `Up to ${DSA_LABEL[d].toLowerCase()}`}
+                </button>
+              ))}
+            </div>
+            <p className="hint">
+              Platforms whose DSA is harder than this are hidden. LeetCode terms: easy is arrays and
+              hash maps, medium adds sliding window, graphs and light DP, hard is Codility-style
+              optimisation under time pressure.
+            </p>
+          </div>
+          <div>
+            <h3 id="fmt-h">Test types you&apos;re ready for</h3>
+            <div className="fmt-chips" role="group" aria-labelledby="fmt-h">
+              {PREP_FORMATS.map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  aria-pressed={formats.has(f.id)}
+                  onClick={() => toggle(f.id)}
+                  title={f.hint}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+            <div className="prep-actions">
+              <button type="button" className="link" onClick={() => setFormats(new Set(PREP_FORMATS.map((f) => f.id)))}>
+                Tick all
+              </button>
+              <button type="button" className="link" onClick={() => setFormats(new Set())}>
+                Clear
+              </button>
+              <label className="toggle">
+                <input type="checkbox" checked={onlyReady} onChange={(e) => setOnlyReady(e.target.checked)} />
+                Only show platforms I&apos;m ready for
+              </label>
+            </div>
+          </div>
+        </div>
+        <p className="prep-sum" aria-live="polite">
+          You&apos;re ready for <b>{readyCount}</b> of {total} platforms.
+        </p>
+      </section>
+
       <nav className="bar-nav" aria-label="Portal types and sorting">
         <div className="wrap bar-inner">
           <ul className="jump">
@@ -201,10 +376,13 @@ export default function Directory() {
               </li>
             ))}
             <li className="k-skip">
-              <a href="#skip">Skip list</a>
+              <a href="#left-out">Left out</a>
             </li>
           </ul>
           <div className="controls">
+            <span className="bar-ready">
+              Ready for {readyCount} of {total}
+            </span>
             <div className="seg" role="group" aria-label="Sort">
               {(
                 [
@@ -218,10 +396,6 @@ export default function Directory() {
                 </button>
               ))}
             </div>
-            <label className="toggle">
-              <input type="checkbox" checked={hideHard} onChange={(e) => setHideHard(e.target.checked)} />
-              Hide DSA and aptitude tests
-            </label>
           </div>
         </div>
       </nav>
@@ -244,60 +418,71 @@ export default function Directory() {
           <span>
             <span className="swatch sw-band" /> Your $5–8K target
           </span>
-          <span>Select a row for entry steps, fees, warnings and sources.</span>
+          <span>Select a row to see each test stage, what&apos;s inside and how to prepare.</span>
         </div>
 
         <section id="freelance" className="sect k-freelance" aria-labelledby="freelance-h">
           <SectionHead kind="freelance" count={counts.freelance} />
-          <RowList items={list.freelance} />
+          <RowList items={list.freelance} prep={prep} />
         </section>
 
         <section id="boards" className="sect k-boards" aria-labelledby="boards-h">
-          <SectionHead kind="boards" count={BOARDS.length} />
+          <SectionHead kind="boards" count={counts.boards} />
           <p className="sect-note">
-            Startup-heavy boards come first: startups more often use practical rounds and take-homes,
-            while larger companies lean on DSA rounds. The board doesn&apos;t set the test; the employer
-            does.
+            The board doesn&apos;t test you; the employer does. These are the two loops you&apos;ll
+            usually meet. Startup-heavy boards come first because their loops more often skip DSA.
           </p>
-          <ol className="rows boards">
-            {boards.map((b, i) => (
-              <li key={b.id} id={b.id} className="board">
-                <span className="rank">{i + 1}</span>
-                <span className="who">
-                  <a className="name" href={b.url} target="_blank" rel="noopener noreferrer">
-                    {b.name}
-                  </a>
-                  <span className="label">{b.note}</span>
-                </span>
-                <span className="test">
-                  <span className={`tag ${b.mix === "startup" ? "t-practical" : "t-dsa"}`}>
-                    {b.mix === "startup" ? "Mostly startups: practical rounds common" : "All sizes: expect DSA at big companies"}
+          <div className="loops">
+            {(["startup", "bigco"] as const).map((m) => {
+              const gaps = missing(LOOPS[m].stages, prep);
+              return (
+                <div key={m} className="loop">
+                  <h3>
+                    {LOOPS[m].title} <DsaBadge level={maxDsa(LOOPS[m].stages)} /> <Ready gaps={gaps} />
+                  </h3>
+                  <Pipeline stages={LOOPS[m].stages} gaps={prep} />
+                </div>
+              );
+            })}
+          </div>
+          {boards.length ? (
+            <ol className="rows boards">
+              {boards.map((b, i) => (
+                <li key={b.id} id={b.id} className="board">
+                  <span className="rank">{i + 1}</span>
+                  <span className="who">
+                    <a className="name" href={b.url} target="_blank" rel="noopener noreferrer">
+                      {b.name}
+                    </a>
+                    <span className="label">{b.note}</span>
                   </span>
-                </span>
-                <span className="cost">{b.cost}</span>
-              </li>
-            ))}
-          </ol>
+                  <span className="test">
+                    <span className={`tag ${b.mix === "startup" ? "t-practical" : "t-dsa"}`}>
+                      {LOOPS[b.mix].title}
+                    </span>
+                  </span>
+                  <span className="cost">{b.cost}</span>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="empty">Nothing here matches your prep yet. Raise your DSA level or tick more test types above.</p>
+          )}
         </section>
 
         <section id="vetted" className="sect k-vetted" aria-labelledby="vetted-h">
           <SectionHead kind="vetted" count={counts.vetted} />
           <h3 className="sub">Developer networks: placed on client teams</h3>
-          <RowList items={list.dev} />
+          <RowList items={list.dev} prep={prep} />
           <h3 className="sub">AI-training networks: write and judge code for AI labs</h3>
-          <RowList items={list.ai} />
+          <RowList items={list.ai} prep={prep} />
         </section>
 
         <section id="build" className="sect k-build" aria-labelledby="build-h">
           <SectionHead kind="build" count={counts.build} />
-          <p className="sect-note unverified">
-            Added on top of the October 2026 research and not checked with it. Confirm India eligibility
-            and payout terms on each site before you build anything. Two test-and-match platforms also
-            end with a build step: Toptal&apos;s 1–3 week test project and Crossover&apos;s real-work
-            trial.
-          </p>
-          <RowList items={list.build} />
+          <RowList items={list.build} prep={prep} />
         </section>
+
       </div>
     </div>
   );
