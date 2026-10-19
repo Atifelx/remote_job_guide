@@ -1,4 +1,4 @@
-export type Kind = "freelance" | "boards" | "vetted" | "build";
+export type Kind = "freelance" | "vetted" | "boards" | "takehome";
 
 /** Primary entry gate, used for the ladder columns. */
 export type Test =
@@ -30,6 +30,9 @@ export type Dsa = "none" | "easy" | "medium" | "hard";
 /** 1: days to 2 weeks, 2: 2–6 weeks, 3: 1–3 months, 4: months or never. */
 export type Speed = 1 | 2 | 3 | 4;
 
+/** How many relevant jobs or projects show up: 1 high, 2 medium, 3 low. */
+export type Flow = 1 | 2 | 3;
+
 export interface Stage {
   title: string;
   formats: Format[];
@@ -44,8 +47,9 @@ export interface Platform {
   id: string;
   name: string;
   url: string;
-  kind: Kind;
-  group?: "dev" | "ai";
+  kind: Exclude<Kind, "boards">;
+  /** Best-first position within its section. */
+  rank: number;
   label: string;
   test: Test;
   /** Entry difficulty, 1 (walk in) to 5 (top few percent pass). */
@@ -53,6 +57,8 @@ export interface Platform {
   /** How soon paid work usually starts after you apply. */
   speed: Speed;
   speedNote: string;
+  flow: Flow;
+  flowNote: string;
   stages: Stage[];
   prep: string;
   retake?: string;

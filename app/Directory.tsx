@@ -11,15 +11,17 @@ import {
   PLATFORMS,
   SPEED_LABEL,
   TESTS,
+  FLOW_LABEL,
   byEntry,
   byPay,
+  byRank,
   bySpeed,
   maxDsa,
   needsOf,
 } from "@/lib/data";
-import type { Dsa, Format, Kind, Platform, Speed, Stage } from "@/lib/types";
+import type { Dsa, Flow, Format, Kind, Platform, Speed, Stage } from "@/lib/types";
 
-type Sort = "fast" | "easy" | "hard" | "pay";
+type Sort = "best" | "fast" | "easy" | "pay";
 
 const MAX = 10000;
 const fmt = (n: number) => "$" + n.toLocaleString("en-US");
@@ -78,11 +80,19 @@ function SpeedPill({ speed }: { speed: Speed }) {
   );
 }
 
+function FlowPill({ flow }: { flow: Flow }) {
+  return (
+    <span className={`flow f${flow}`} title="How many relevant jobs or projects show up">
+      <span className="speed-k">Job flow</span> {FLOW_LABEL[flow]}
+    </span>
+  );
+}
+
 function Pay({ p }: { p: Platform }) {
   if (p.lo == null || p.hi == null) {
     return (
       <span className="pay">
-        <strong className="pay-none">{p.kind === "build" ? "Set per company" : "Not published"}</strong>
+        <strong className="pay-none">{p.kind === "takehome" ? "Set per company" : "Not published"}</strong>
       </span>
     );
   }
@@ -173,6 +183,7 @@ function Row({ p, rank, prep }: { p: Platform; rank: number; prep: Prep }) {
           <Ready gaps={gaps} />
           <Pay p={p} />
           <span className="row2">
+            <FlowPill flow={p.flow} />
             <SpeedPill speed={p.speed} />
             <Strip stages={p.stages} />
           </span>
@@ -187,6 +198,8 @@ function Row({ p, rank, prep }: { p: Platform; rank: number; prep: Prep }) {
             </p>
           )}
           <dl>
+            <dt>Job flow</dt>
+            <dd>{p.flowNote}</dd>
             <dt>How fast</dt>
             <dd>{p.speedNote}</dd>
             <dt>How to prepare</dt>
@@ -252,7 +265,7 @@ function SectionHead({ kind, count }: { kind: Kind; count: number }) {
 }
 
 export default function Directory() {
-  const [sort, setSort] = useState<Sort>("easy");
+  const [sort, setSort] = useState<Sort>("best");
   const [fastOnly, setFastOnly] = useState(false);
   const [dsa, setDsa] = useState<Dsa>("hard");
   const [formats, setFormats] = useState<Set<Format>>(() => new Set());
@@ -291,31 +304,33 @@ export default function Directory() {
         ? byPay
         : sort === "fast"
           ? bySpeed
-          : sort === "hard"
-            ? (a: Platform, b: Platform) => byEntry(b, a)
-            : byEntry;
+          : sort === "easy"
+            ? byEntry
+            : byRank;
     const pick = (f: (p: Platform) => boolean) =>
       PLATFORMS.filter((p) => f(p) && keep(p.stages, p.speed)).sort(cmp);
     return {
       freelance: pick((p) => p.kind === "freelance"),
-      dev: pick((p) => p.kind === "vetted" && p.group === "dev"),
-      ai: pick((p) => p.kind === "vetted" && p.group === "ai"),
-      build: pick((p) => p.kind === "build"),
+      vetted: pick((p) => p.kind === "vetted"),
+      takehome: pick((p) => p.kind === "takehome"),
     };
   })();
 
   const boards = (() => {
-    const b = BOARDS.filter((x) => keep(LOOPS[x.mix].stages, x.speed)).sort(
-      (a, z) => a.speed - z.speed || a.rank - z.rank,
+    return BOARDS.filter((x) => keep(LOOPS[x.mix].stages, x.speed)).sort((a, z) =>
+      sort === "fast"
+        ? a.speed - z.speed || a.rank - z.rank
+        : sort === "easy"
+          ? (a.mix === z.mix ? 0 : a.mix === "startup" ? -1 : 1) || a.rank - z.rank
+          : a.rank - z.rank,
     );
-    return sort === "hard" ? b.reverse() : b;
   })();
 
   const counts: Record<Kind, number> = {
     freelance: list.freelance.length,
     boards: boards.length,
-    vetted: list.dev.length + list.ai.length,
-    build: list.build.length,
+    vetted: list.vetted.length,
+    takehome: list.takehome.length,
   };
 
   const total = PLATFORMS.length;
@@ -409,9 +424,9 @@ export default function Directory() {
             <div className="seg" role="group" aria-label="Sort">
               {(
                 [
+                  ["best", "Best first"],
                   ["fast", "Fastest to paid work"],
                   ["easy", "Easiest entry"],
-                  ["hard", "Hardest entry"],
                   ["pay", "Highest pay"],
                 ] as const
               ).map(([id, label]) => (
@@ -441,6 +456,9 @@ export default function Directory() {
             Entry difficulty, 1 to 5
           </span>
           <span>
+            <FlowPill flow={1} /> how many relevant jobs appear
+          </span>
+          <span>
             <span className="swatch sw-range" /> Realistic monthly range
           </span>
           <span>
@@ -454,13 +472,17 @@ export default function Directory() {
           <RowList items={list.freelance} prep={prep} />
         </section>
 
+
+        <section id="vetted" className="sect k-vetted" aria-labelledby="vetted-h">
+          <SectionHead kind="vetted" count={counts.vetted} />
+          <RowList items={list.vetted} prep={prep} />
+        </section>
+
         <section id="boards" className="sect k-boards" aria-labelledby="boards-h">
           <SectionHead kind="boards" count={counts.boards} />
           <p className="sect-note">
             The board doesn&apos;t test you; the employer does. These are the two loops you&apos;ll
-            usually meet. Boards are ordered by how fast replies come. Wherever you find a role, apply
-            on the company&apos;s own careers page: those applications reach interview about 3.5 times
-            as often as LinkedIn ones.
+            usually meet.
           </p>
           <div className="loops">
             {(["startup", "bigco"] as const).map((m) => {
@@ -492,12 +514,12 @@ export default function Directory() {
                     </span>
                   </span>
                   <span className="board-speed">
+                    <FlowPill flow={b.flow} />
                     <SpeedPill speed={b.speed} />
                     <span className="cost">{b.cost}</span>
                   </span>
                   <span className="board-more">
-                    {b.speedNote}
-                    {b.warn && <b className="warn"> {b.warn}</b>}
+                    {b.flowNote} {b.speedNote}
                   </span>
                 </li>
               ))}
@@ -507,19 +529,10 @@ export default function Directory() {
           )}
         </section>
 
-        <section id="vetted" className="sect k-vetted" aria-labelledby="vetted-h">
-          <SectionHead kind="vetted" count={counts.vetted} />
-          <h3 className="sub">Developer networks: placed on client teams</h3>
-          <RowList items={list.dev} prep={prep} />
-          <h3 className="sub">AI-training networks: write and judge code for AI labs</h3>
-          <RowList items={list.ai} prep={prep} />
+        <section id="takehome" className="sect k-takehome" aria-labelledby="takehome-h">
+          <SectionHead kind="takehome" count={counts.takehome} />
+          <RowList items={list.takehome} prep={prep} />
         </section>
-
-        <section id="build" className="sect k-build" aria-labelledby="build-h">
-          <SectionHead kind="build" count={counts.build} />
-          <RowList items={list.build} prep={prep} />
-        </section>
-
       </div>
     </div>
   );
