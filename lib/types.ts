@@ -27,6 +27,9 @@ export type Format =
 
 export type Dsa = "none" | "easy" | "medium" | "hard";
 
+/** 1: days to 2 weeks, 2: 2–6 weeks, 3: 1–3 months, 4: months or never. */
+export type Speed = 1 | 2 | 3 | 4;
+
 export interface Stage {
   title: string;
   formats: Format[];
@@ -47,6 +50,9 @@ export interface Platform {
   test: Test;
   /** Entry difficulty, 1 (walk in) to 5 (top few percent pass). */
   difficulty: number;
+  /** How soon paid work usually starts after you apply. */
+  speed: Speed;
+  speedNote: string;
   stages: Stage[];
   prep: string;
   retake?: string;

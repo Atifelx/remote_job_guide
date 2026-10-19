@@ -513,7 +513,27 @@ h3 {
 }
 
 .board {
-  grid-template-columns: 2rem minmax(12rem, 1fr) 17rem 11rem;
+  grid-template-columns: 2rem minmax(12rem, 1fr) 15rem 13rem;
+  align-items: start;
+}
+
+.board-speed {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.board-more {
+  grid-column: 2 / -1;
+  font-size: 0.82rem;
+  color: var(--muted);
+  max-width: 90ch;
+}
+
+.warn {
+  color: #a3271f;
+  font-weight: 600;
 }
 
 .row {
@@ -932,8 +952,35 @@ button.link {
 
 /* Pipeline strip on the collapsed row */
 
-.strip {
+.row2 {
   grid-column: 2 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+/* Speed to paid work: greener is sooner. */
+.speed {
+  display: inline-block;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.speed-k {
+  font-weight: 500;
+}
+
+.speed.s1 { background: #0e6f67; color: #fff; }
+.speed.s2 { background: #cfe8e1; color: #0b5a53; }
+.speed.s3 { background: #e7ecf1; color: var(--muted); }
+.speed.s4 { background: #f3e1df; color: #8f2a22; }
+
+.strip {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
@@ -1135,11 +1182,11 @@ button.link {
       ". test ready"
       ". steps dsa"
       ". pay pay"
-      ". strip strip";
+      ". row2 row2";
   }
 
   .row .ready { grid-area: ready; justify-self: start; }
-  .row .strip { grid-area: strip; }
+  .row .row2 { grid-area: row2; }
 
   .row .rank { grid-area: rank; }
   .row .who { grid-area: who; }
@@ -1154,7 +1201,8 @@ button.link {
   }
 
   .board .test,
-  .board .cost {
+  .board .board-speed,
+  .board .board-more {
     grid-column: 2;
   }
 

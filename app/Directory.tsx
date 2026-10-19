@@ -9,15 +9,17 @@ import {
   KINDS,
   LOOPS,
   PLATFORMS,
+  SPEED_LABEL,
   TESTS,
   byEntry,
   byPay,
+  bySpeed,
   maxDsa,
   needsOf,
 } from "@/lib/data";
-import type { Dsa, Format, Kind, Platform, Stage } from "@/lib/types";
+import type { Dsa, Format, Kind, Platform, Speed, Stage } from "@/lib/types";
 
-type Sort = "easy" | "hard" | "pay";
+type Sort = "fast" | "easy" | "hard" | "pay";
 
 const MAX = 10000;
 const fmt = (n: number) => "$" + n.toLocaleString("en-US");
@@ -68,11 +70,19 @@ function Ready({ gaps }: { gaps: string[] }) {
   );
 }
 
+function SpeedPill({ speed }: { speed: Speed }) {
+  return (
+    <span className={`speed s${speed}`} title="How soon paid work usually starts">
+      <span className="speed-k">Paid work in</span> {SPEED_LABEL[speed]}
+    </span>
+  );
+}
+
 function Pay({ p }: { p: Platform }) {
   if (p.lo == null || p.hi == null) {
     return (
       <span className="pay">
-        <strong className="pay-none">Set per company</strong>
+        <strong className="pay-none">{p.kind === "build" ? "Set per company" : "Not published"}</strong>
       </span>
     );
   }
@@ -162,7 +172,10 @@ function Row({ p, rank, prep }: { p: Platform; rank: number; prep: Prep }) {
           <DsaBadge level={maxDsa(p.stages)} />
           <Ready gaps={gaps} />
           <Pay p={p} />
-          <Strip stages={p.stages} />
+          <span className="row2">
+            <SpeedPill speed={p.speed} />
+            <Strip stages={p.stages} />
+          </span>
         </summary>
         <div className="more">
           {p.check && <p className="check">{p.check}</p>}
@@ -174,6 +187,8 @@ function Row({ p, rank, prep }: { p: Platform; rank: number; prep: Prep }) {
             </p>
           )}
           <dl>
+            <dt>How fast</dt>
+            <dd>{p.speedNote}</dd>
             <dt>How to prepare</dt>
             <dd>{p.prep}</dd>
             {p.retake && (
@@ -238,6 +253,7 @@ function SectionHead({ kind, count }: { kind: Kind; count: number }) {
 
 export default function Directory() {
   const [sort, setSort] = useState<Sort>("easy");
+  const [fastOnly, setFastOnly] = useState(false);
   const [dsa, setDsa] = useState<Dsa>("hard");
   const [formats, setFormats] = useState<Set<Format>>(() => new Set());
   const [onlyReady, setOnlyReady] = useState(false);
@@ -263,16 +279,23 @@ export default function Directory() {
       return next;
     });
 
-  const keep = (stages: Stage[]) => {
+  const keep = (stages: Stage[], speed: Speed) => {
+    if (fastOnly && speed > 2) return false;
     if (DSA_ORDER[maxDsa(stages)] > DSA_ORDER[dsa]) return false;
     return !onlyReady || missing(stages, prep).length === 0;
   };
 
   const list = (() => {
     const cmp =
-      sort === "pay" ? byPay : sort === "hard" ? (a: Platform, b: Platform) => byEntry(b, a) : byEntry;
+      sort === "pay"
+        ? byPay
+        : sort === "fast"
+          ? bySpeed
+          : sort === "hard"
+            ? (a: Platform, b: Platform) => byEntry(b, a)
+            : byEntry;
     const pick = (f: (p: Platform) => boolean) =>
-      PLATFORMS.filter((p) => f(p) && keep(p.stages)).sort(cmp);
+      PLATFORMS.filter((p) => f(p) && keep(p.stages, p.speed)).sort(cmp);
     return {
       freelance: pick((p) => p.kind === "freelance"),
       dev: pick((p) => p.kind === "vetted" && p.group === "dev"),
@@ -282,8 +305,8 @@ export default function Directory() {
   })();
 
   const boards = (() => {
-    const b = BOARDS.filter((x) => keep(LOOPS[x.mix].stages)).sort((a, z) =>
-      a.mix !== z.mix ? (a.mix === "startup" ? -1 : 1) : a.rank - z.rank,
+    const b = BOARDS.filter((x) => keep(LOOPS[x.mix].stages, x.speed)).sort(
+      (a, z) => a.speed - z.speed || a.rank - z.rank,
     );
     return sort === "hard" ? b.reverse() : b;
   })();
@@ -386,6 +409,7 @@ export default function Directory() {
             <div className="seg" role="group" aria-label="Sort">
               {(
                 [
+                  ["fast", "Fastest to paid work"],
                   ["easy", "Easiest entry"],
                   ["hard", "Hardest entry"],
                   ["pay", "Highest pay"],
@@ -396,6 +420,10 @@ export default function Directory() {
                 </button>
               ))}
             </div>
+            <label className="toggle">
+              <input type="checkbox" checked={fastOnly} onChange={(e) => setFastOnly(e.target.checked)} />
+              Paid work within 6 weeks
+            </label>
           </div>
         </div>
       </nav>
@@ -430,7 +458,9 @@ export default function Directory() {
           <SectionHead kind="boards" count={counts.boards} />
           <p className="sect-note">
             The board doesn&apos;t test you; the employer does. These are the two loops you&apos;ll
-            usually meet. Startup-heavy boards come first because their loops more often skip DSA.
+            usually meet. Boards are ordered by how fast replies come. Wherever you find a role, apply
+            on the company&apos;s own careers page: those applications reach interview about 3.5 times
+            as often as LinkedIn ones.
           </p>
           <div className="loops">
             {(["startup", "bigco"] as const).map((m) => {
@@ -461,7 +491,14 @@ export default function Directory() {
                       {LOOPS[b.mix].title}
                     </span>
                   </span>
-                  <span className="cost">{b.cost}</span>
+                  <span className="board-speed">
+                    <SpeedPill speed={b.speed} />
+                    <span className="cost">{b.cost}</span>
+                  </span>
+                  <span className="board-more">
+                    {b.speedNote}
+                    {b.warn && <b className="warn"> {b.warn}</b>}
+                  </span>
                 </li>
               ))}
             </ol>

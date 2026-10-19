@@ -3,7 +3,7 @@
 // build-first hiring. Stage details are from official pages where they exist, otherwise from
 // candidate write-ups; anything unconfirmed says so in the text.
 
-import type { Dropped, Dsa, Format, Kind, Platform, Stage, Test } from "./types";
+import type { Dropped, Dsa, Format, Kind, Platform, Speed, Stage, Test } from "./types";
 
 export const TESTS: { id: Test; label: string; hint: string }[] = [
   { id: "open", label: "Open sign-up", hint: "Make a profile and start bidding" },
@@ -31,6 +31,13 @@ export const FORMATS: { id: Format; label: string; hint: string }[] = [
   { id: "aptitude", label: "Aptitude (CCAT)", hint: "50 logic, maths and verbal questions in 15 minutes" },
   { id: "talk", label: "Interviews and calls", hint: "Talking through your experience with a person" },
 ];
+
+export const SPEED_LABEL: Record<Speed, string> = {
+  1: "Days to 2 weeks",
+  2: "2–6 weeks",
+  3: "1–3 months",
+  4: "Months, or never",
+};
 
 export const DSA_ORDER: Record<Dsa, number> = { none: 0, easy: 1, medium: 2, hard: 3 };
 export const DSA_LABEL: Record<Dsa, string> = { none: "None", easy: "Easy", medium: "Medium", hard: "Hard" };
@@ -71,6 +78,8 @@ export const PLATFORMS: Platform[] = [
   {
     id: "upwork", name: "Upwork", url: "https://www.upwork.com", kind: "freelance", label: "Freelance marketplace",
     test: "open", difficulty: 1,
+    speed: 2,
+    speedNote: "No pool: work starts when a client hires you. Your review history shortens this; new profiles often wait weeks.",
     stages: [
       { title: "Profile review", formats: [], inside: "New profiles are reviewed before you can bid. Yours is already approved, with $20K+ earned." },
       { title: "Proposal", formats: [], inside: "A written proposal per job. Connects cost $0.15 each and aren't refunded if you lose." },
@@ -89,6 +98,8 @@ export const PLATFORMS: Platform[] = [
   {
     id: "arc", name: "Arc.dev", url: "https://arc.dev/talent", kind: "vetted", group: "dev", label: "Vetted network, accepts India",
     test: "live", difficulty: 3,
+    speed: 2,
+    speedNote: "You apply to live roles, so there's no long pool; Arc claims about 14 days to hire (a competitor's figure).",
     stages: [
       { title: "Profile screening", formats: [], inside: "A person reviews your work history and GitHub. Padded resumes get rejected." },
       { title: "Communication check", formats: ["english"], inside: "A recorded video or voice self-introduction to check English and remote readiness." },
@@ -105,6 +116,8 @@ export const PLATFORMS: Platform[] = [
   {
     id: "turing", name: "Turing", url: "https://www.turing.com/jobs", kind: "vetted", group: "dev", label: "Developer jobs track",
     test: "dsa", difficulty: 4,
+    speed: 4,
+    speedNote: "Testing takes 3–4 days, then 3–4 months in the pool is commonly reported. Treat passing as joining a queue.",
     stages: [
       { title: "Work-experience survey", formats: [], time: "20–30 min", inside: "57 questions about your experience (60 minutes allowed)." },
       { title: "Tech-stack quizzes", formats: ["mcq"], time: "45–120 min each", inside: "Multiple-choice on your stack's fundamentals and reading code. Turing says to expect 3–6 hours of testing in total." },
@@ -117,12 +130,14 @@ export const PLATFORMS: Platform[] = [
     after: "Most open roles are now LLM-trainer contracts, and people report 3–4 months in the pool after passing. Contracts are 20, 30 or 40 hrs/week with 4 hours of US Pacific overlap.",
     lo: 2500, hi: 6000, est: true,
     pay: "Not published. One 2025 case: the client paid $14.5K a month and the developer received $6K.",
-    watch: "India reviews mention layoffs and a lack of projects. Payments are reported as on time.",
+    watch: "Trustpilot about 2.5/5 from 200+ reviews, mostly from people stuck in the pool; India reviews mention layoffs and a lack of projects. Placed contractors say payments are on time.",
     src: [["Test prep", "https://www.turing.com/blog/turing-developer-test-preparation-tips"], ["How to get hired", "https://www.turing.com/blog/turing-com-review-good-for-remote-developer-jobs"], ["Glassdoor interviews", "https://www.glassdoor.com/Interview/Turing-Software-Engineer-Interview-Questions-EI_IE2462330.0,6_KO7,24.htm"]],
   },
   {
     id: "andela", name: "Andela", url: "https://www.andela.com/for-talent", kind: "vetted", group: "dev", label: "Vetted network, 4+ years",
     test: "dsa", difficulty: 4,
+    speed: 3,
+    speedNote: "Pool model with slow matching and long client loops; no measured timing found.",
     check: "India isn't confirmed on Andela's list of approved countries (the page returned an error during research). Confirm before you take the test.",
     stages: [
       { title: "English test", formats: ["english"], inside: "AI-scored. Can be skipped with an English-medium degree." },
@@ -141,6 +156,8 @@ export const PLATFORMS: Platform[] = [
   {
     id: "toptal", name: "Toptal", url: "https://www.toptal.com", kind: "vetted", group: "dev", label: "Vetted network, accepts India",
     test: "dsa", difficulty: 5,
+    speed: 3,
+    speedNote: "Screening takes 3–8 weeks, then 1–4 weeks to a first client match.",
     stages: [
       { title: "English and personality interview", formats: ["english", "talk"], inside: "A live call. 26.4% of all applicants are still in after this stage." },
       { title: "Skill review", formats: ["dsa"], dsa: "hard", time: "90–100 min", inside: "Timed Codility test: 3 problems (easy, medium, hard), auto-scored on correctness and performance; about 210/300 to pass. Some 2026 reports say HackerRank plus short theory quizzes. 7.4% still in." },
@@ -159,6 +176,8 @@ export const PLATFORMS: Platform[] = [
   {
     id: "crossover", name: "Crossover", url: "https://www.crossover.com/jobs/software-engineer/india", kind: "vetted", group: "dev", label: "Fixed USD pay, same in every country",
     test: "aptitude", difficulty: 5,
+    speed: 1,
+    speedNote: "You apply to a specific open role, so an offer means the job starts; offers often come within days of the last test.",
     stages: [
       { title: "Fit questions and AI screen", formats: ["ai"], time: "15–20 min", inside: "Basic yes/no fit questions and a short AI screening interview." },
       { title: "CCAT aptitude test", formats: ["aptitude"], time: "15 min", inside: "50 verbal, maths and logic questions in 15 minutes, no calculator. Switching tabs disqualifies you. Each role has its own cutoff." },
@@ -179,6 +198,8 @@ export const PLATFORMS: Platform[] = [
   {
     id: "micro1", name: "micro1", url: "https://www.micro1.ai/experts", kind: "vetted", group: "ai", label: "AI-interview vetting, open worldwide",
     test: "ai", difficulty: 2,
+    speed: 4,
+    speedNote: "Pool: the first matching window is 1–2 weeks, but many sit in 'Hiring Manager Reviewing' for 30 days and then get 'Not Selected'.",
     stages: [
       { title: "Resume and role", formats: [], inside: "Pick a role and upload your resume, then verify your ID." },
       { title: "Practice interview (optional)", formats: ["ai"], time: "18 min", inside: "A free practice run with the AI interviewer." },
@@ -189,27 +210,31 @@ export const PLATFORMS: Platform[] = [
     after: "Certified people go into a pool; micro1 says far more pass than there are openings. Applicants report 'Hiring Manager Reviewing' for up to 30 days, then 'Not Selected'.",
     lo: 2000, hi: 5000, est: true,
     pay: "$20–200/hr overall; one SWE AI-trainer listing shows $20–75/hr. Paid in USD via Deel twice a month, reported as reliable. India rate not published.",
-    watch: "Hubstaff time tracking. Rejections are automated and abrupt, but no unpaid completed work was reported.",
+    watch: "Hubstaff time tracking. In May 2026 Indian developers posted 'scam alert' threads about automated rejections after a 60-minute interview. No unpaid completed work was reported, but don't count on it as your only channel.",
     src: [["Interview questions", "https://www.micro1.ai/interview-questions"], ["Interview write-up", "https://prachub.com/interview-experiences/micro1-software-engineer-zara-ai-interview-with-rapid-technical-questions-59efcc346c"], ["Waiting", "https://getaiwork.com/articles/micro1-no-response/"]],
   },
   {
     id: "mercor", name: "Mercor", url: "https://www.mercor.com/experts/software-engineers/", kind: "vetted", group: "ai", label: "Expert contracts for AI labs",
     test: "ai", difficulty: 2,
+    speed: 2,
+    speedNote: "Picked candidates usually start in 2–4 weeks and Stripe holds the first payout 7 days; many applicants are never matched.",
     stages: [
-      { title: "AI video interview", formats: ["ai"], time: "about 20 min", inside: "About your resume and projects, plus spoken data-structure concept questions; no live coding reported. Up to 3 retakes, but hiring managers see the count and a retake resets your application." },
+      { title: "AI video interview", formats: ["ai", "dsa"], dsa: "easy", time: "about 20 min", inside: "About your resume and projects, plus data-structure questions. Reports differ: some describe only spoken questions, others an easy-to-medium problem solved while the AI watches your screen. Up to 3 retakes, but hiring managers see the count and a retake resets your application." },
       { title: "Role test (some roles)", formats: ["takehome"], inside: "Some roles add a coding challenge, take-home or domain test." },
-      { title: "Paid work trial", formats: ["trial", "aieval"], paid: true, inside: "One paid trial per person, ever, on real project tasks." },
+      { title: "Paid work trial", formats: ["trial", "aieval"], paid: true, time: "4–6 hrs", inside: "One paid trial per person, ever, on real project tasks." },
     ],
     prep: "Rehearse a 2-minute walkthrough of your strongest AI-agent project and its trade-offs. Using an LLM to write answers or evaluate code is against the rules.",
     after: "No formal rejections: no match within 4–6 weeks means not picked. Projects end abruptly (about 800 contractors offboarded from one project in May 2026), and offboarding decisions are final.",
     lo: 2000, hi: 6000, est: true,
-    pay: "Official SWE range $80–200/hr, paid weekly via Stripe or Wise. India rate not published. In Nov 2025 a Meta project relaunched at $16/hr instead of $21.",
+    pay: "Official SWE range $80–200/hr; Glassdoor shows $50–84/hr from 15 reports. A 'Software Engineer – India' contract is listed at 15–40 hrs/week. Paid weekly via Stripe or Wise. In Nov 2025 a Meta project relaunched at $16/hr instead of $21.",
     watch: "Screen monitoring with Insightful; 2026 contractor-misclassification lawsuit and data-breach class action.",
     src: [["Software roles", "https://www.mercor.com/experts/software-engineers/"], ["AI interview", "https://talent.docs.mercor.com/support/ai-interview"], ["Pay cut", "https://www.forbes.com/sites/iainmartin/2025/11/12/the-worlds-youngest-self-made-billionaires-just-slashed-these-workers-wages-by-a-third/"]],
   },
   {
     id: "turing-agi", name: "Turing AGI", url: "https://work.turing.com/", kind: "vetted", group: "ai", label: "Coding-trainer contracts",
     test: "practical", difficulty: 2,
+    speed: 3,
+    speedNote: "Profiles can sit 'assigned' for weeks with no tasks before a project starts.",
     check: "The senior 'AI Evaluation / Coding Agents' role ($100–150/hr: AI interview, code-evaluation exercise, manager interview) is North America only. The pipeline below is the India-eligible track.",
     stages: [
       { title: "Self-scheduled coding challenge", formats: ["dsa"], dsa: "medium", time: "30–45 min", inside: "An automated challenge in any language on Turing's Vetsmith platform. Difficulty isn't published; likely easy to medium." },
@@ -224,26 +249,49 @@ export const PLATFORMS: Platform[] = [
   },
   {
     id: "g2i", name: "G2i", url: "https://www.g2i.ai/for-talent", kind: "vetted", group: "ai", label: "Senior engineers judging AI-written code",
-    test: "live", difficulty: 3,
-    check: "G2i doesn't publish the exact steps for its AI-training track; these are its general talent vetting steps.",
+    test: "practical", difficulty: 3,
+    speed: 1,
+    speedNote: "Onboarding is designed to finish in about a week (about 3.5 hours of active work), ending in a real production task.",
+    check: "India isn't named ('150+ countries… some in Asia'), and whether the final production task is paid isn't confirmed. Check both before you start.",
     stages: [
-      { title: "Recorded video questions", formats: ["talk"], inside: "3–5 recorded video answers about your experience." },
-      { title: "Live technical interview", formats: ["live"], time: "45–60 min", inside: "With an engineer, focused on your framework rather than algorithm puzzles." },
-      { title: "Framework test", formats: [], inside: "A test in your main framework; format not published." },
-      { title: "AI-training work", formats: ["aieval", "codereview"], inside: "Ranking output from AI coding agents (Codex, Claude Code), fixing AI-generated code, writing tests and written critiques." },
+      { title: "Async code review", formats: ["codereview"], inside: "Review code on your own time and write up what you'd change." },
+      { title: "Credentials check", formats: [], inside: "Experience and identity; needs 3–4+ years." },
+      { title: "Training course", formats: [], inside: "How G2i's AI-evaluation work is scored." },
+      { title: "Real production task", formats: ["aieval", "codereview"], inside: "Your final interview is a real task: ranking output from AI coding agents (Codex, Claude Code), fixing AI-generated code, writing tests and written critiques." },
     ],
-    prep: "Be sharp in your main framework, and practise reviewing AI-generated diffs: spotting bugs, ranking two solutions and writing short, specific critiques.",
-    after: "You sit on a bench until a project needs you; onboarding takes about a week. Paid weekly, and G2i says it pays even if the client doesn't.",
+    prep: "Practise reviewing AI-generated diffs: spotting bugs, ranking two solutions and writing short, specific critiques. Be sharp in your main framework.",
+    after: "Between projects you sit on a bench. Paid weekly, and G2i says it pays even if the client doesn't.",
     lo: 2500, hi: 6000, est: true,
     pay: "Senior SWE AI-training roles $100–200/hr at 10–20 hrs/week (rate depends partly on location); other postings $30–70/hr. Open in 150+ countries (May 2026). India rate not published.",
     watch: "Bench time between projects is the main complaint; no lawsuits found.",
     src: [["For talent", "https://www.g2i.ai/for-talent"], ["2026 hiring", "https://jobbi.org/news/g2i-is-hiring-50-software-engineers-at-up-to-200hour-to-judge-ai-written-code/"]],
+  },
+  {
+    id: "xai", name: "xAI AI Tutor (Software Engineering)", url: "https://x.ai/careers", kind: "vetted", group: "ai", label: "Direct contract with the lab, no middleman",
+    test: "dsa", difficulty: 3,
+    speed: 2,
+    speedNote: "A direct contract for a specific role rather than a marketplace pool. No timing data found; assumed weeks, not months.",
+    check: "The listing says 'remote from any location worldwide, subject to legal eligibility' and an aggregator lists India, but xAI hasn't confirmed India. International pay is disclosed only during recruitment. Stages below come from candidate reports.",
+    stages: [
+      { title: "Screening", formats: ["talk"], time: "about 10 min", inside: "A video intro or about 12 quick questions." },
+      { title: "CodeSignal coding test", formats: ["dsa"], dsa: "medium", time: "about 60 min", proctored: true, inside: "Roughly LeetCode easy to medium." },
+      { title: "Writing test (some roles)", formats: ["english"], proctored: true, inside: "Candidates say it's graded strictly: you'll explain and critique code in writing." },
+      { title: "Short interview", formats: ["talk"], inside: "Then a contract." },
+    ],
+    prep: "Timed easy-to-medium CodeSignal practice, plus writing clear, precise critiques of code (the core of the work).",
+    after: "About 10+ hrs/week on average and you set your own hours.",
+    lo: null, hi: null, est: false,
+    pay: "$60–100/hr for US candidates (July 2026); the India rate is disclosed during recruitment.",
+    watch: "Cut about 500 generalist tutors in September 2025 and kept specialists such as coders; Indeed reviewers call the work unstable.",
+    src: [["Listing", "https://job-boards.greenhouse.io/xai/jobs/5063490007"], ["Interviews", "https://www.glassdoor.com/Interview/x-ai-AI-Tutor-Interview-Questions-EI_IE1266796.0,4_KO5,13.htm"], ["India on aggregator", "https://www.whynotremote.com/jobs/ai-tutor-software-engineering-6cf8db5e"]],
   },
 
   // Build-first hiring
   {
     id: "automattic", name: "Automattic", url: "https://automattic.com/work-with-us/how-we-hire-developers/", kind: "build", label: "WordPress.com, Tumblr, WooCommerce",
     test: "trial", difficulty: 3,
+    speed: 2,
+    speedNote: "Paid work starts with the trial, after an application and a take-home of about a week.",
     check: "India is likely (staff in 80+ countries, India roles on LinkedIn), but whether India hires are USD contractors or employed through a local service isn't confirmed. Ask on the first call.",
     stages: [
       { title: "Written application", formats: [], inside: "Answers to written questions instead of a cover letter." },
@@ -262,6 +310,8 @@ export const PLATFORMS: Platform[] = [
   {
     id: "calcom", name: "Cal.com", url: "https://cal.com/jobs", kind: "build", label: "Paid 30-day contract-to-hire",
     test: "trial", difficulty: 3,
+    speed: 2,
+    speedNote: "The paid 30-day contract starts right after the call; no timing data beyond that.",
     check: "India eligibility unconfirmed: the team is in the US, Latin America and Europe, and contractor vs employee depends on country.",
     stages: [
       { title: "Contribute or apply", formats: [], inside: "Apply, or get noticed through merged open-source PRs and Algora bounties on the Cal.com repo." },
@@ -278,6 +328,8 @@ export const PLATFORMS: Platform[] = [
   {
     id: "toggl", name: "Toggl", url: "https://toggl.com/jobs", kind: "build", label: "Paid test week with the team",
     test: "trial", difficulty: 3,
+    speed: 2,
+    speedNote: "About a month from application to offer; the paid test week comes near the end.",
     check: "India eligibility unconfirmed: 'we hire globally' across 43 countries, but check each posting.",
     stages: [
       { title: "Skills test", formats: ["takehome"], inside: "An online skills assessment or home assignment." },
@@ -295,6 +347,8 @@ export const PLATFORMS: Platform[] = [
   {
     id: "algora", name: "Algora", url: "https://algora.io", kind: "build", label: "Bounty-to-hire at funded open-source companies",
     test: "trial", difficulty: 3,
+    speed: 1,
+    speedNote: "No application: you're paid 1–3 days after your PR merges. Contract offers come after a run of merged work.",
     check: "Payouts go through Stripe Connect; reports say Indian recipients need a registered sole proprietorship, LLP or company. Unconfirmed for individuals.",
     stages: [
       { title: "Claim an issue", formats: [], inside: "Pick a funded issue at a company you'd actually join and comment /attempt." },
@@ -312,6 +366,8 @@ export const PLATFORMS: Platform[] = [
   {
     id: "gitlab", name: "GitLab", url: "https://handbook.gitlab.com/handbook/hiring/interviewing/technical/", kind: "build", label: "Merge-request review interview",
     test: "practical", difficulty: 3,
+    speed: 3,
+    speedNote: "A standard multi-round company loop; no timing data found.",
     check: "Hires through GitLab India Pvt Ltd, so pay is almost certainly INR, not USD.",
     stages: [
       { title: "Recruiter screen", formats: ["talk"], inside: "Background and role fit." },
@@ -329,6 +385,8 @@ export const PLATFORMS: Platform[] = [
   {
     id: "zapier", name: "Zapier", url: "https://zapier.com/l/jobs/interview-guide", kind: "build", label: "Take-home matched to real work",
     test: "practical", difficulty: 3,
+    speed: 3,
+    speedNote: "A standard multi-round company loop with references; no timing data found.",
     check: "Has India roles (a Release Engineering team in the India time zone, Apr 2026), but pay currency and employee vs contractor are unconfirmed; likely INR.",
     stages: [
       { title: "Application questions", formats: [], inside: "Written answers; a resume is optional." },
@@ -346,6 +404,8 @@ export const PLATFORMS: Platform[] = [
   {
     id: "doist", name: "Doist", url: "https://www.todoist.com/careers", kind: "build", label: "Todoist; test task before team interviews",
     test: "practical", difficulty: 3,
+    speed: 3,
+    speedNote: "Long-form application, test task, team interviews and a hiring committee; expect weeks to months.",
     check: "India eligibility unconfirmed but plausible: no location restrictions, and pay is location-adjusted.",
     stages: [
       { title: "Long-form application", formats: [], inside: "Detailed written answers." },
@@ -371,6 +431,9 @@ export interface Board {
   cost: string;
   mix: "startup" | "bigco";
   rank: number;
+  speed: Speed;
+  speedNote: string;
+  warn?: string;
 }
 
 export const LOOPS: Record<Board["mix"], { title: string; stages: Stage[] }> = {
@@ -395,18 +458,26 @@ export const LOOPS: Record<Board["mix"], { title: string; stages: Stage[] }> = {
 };
 
 export const BOARDS: Board[] = [
-  { id: "wellfound", name: "Wellfound", url: "https://wellfound.com/remote", note: "Set your profile location to India and it shows remote roles you're eligible for. Also try the 'Distributed teams only' toggle.", cost: "Free", mix: "startup", rank: 1 },
-  { id: "yc", name: "Y Combinator Work at a Startup", url: "https://www.workatastartup.com", note: "Log in, filter by remote and location; look for roles tagged 'Remote (IN)'. Has Forward Deployed roles.", cost: "Free", mix: "startup", rank: 2 },
-  { id: "fde", name: "Forward Deployed job boards", url: "https://fdejobs.com", note: "fdejobs.com and fde.traversaal.ai list only FD roles (US, EU and India). Newer, niche boards.", cost: "Free", mix: "startup", rank: 3 },
-  { id: "hww", name: "Hiring Without Whiteboards", url: "https://github.com/poteto/hiring-without-whiteboards", note: "A maintained list of companies that interview with take-homes or real problems instead of puzzles. Most are US or EU, so check each company's location rules.", cost: "Free", mix: "startup", rank: 4 },
-  { id: "hn", name: "Hacker News 'Who is hiring'", url: "https://news.ycombinator.com/item?id=49922569", note: "Monthly thread. Look for posts marked REMOTE without a country limit; most remote posts are US or EU only.", cost: "Free", mix: "startup", rank: 5 },
-  { id: "himalayas", name: "Himalayas", url: "https://himalayas.app/jobs/countries/india", note: "Country, worldwide-only and timezone filters.", cost: "Free", mix: "bigco", rank: 6 },
-  { id: "linkedin", name: "LinkedIn Jobs", url: "https://www.linkedin.com/jobs/search/?f_WT=2&geoId=92000000", note: "Remote + Worldwide search. Many 'remote' jobs are still locked to one country, so read the location line.", cost: "Free", mix: "bigco", rank: 7 },
-  { id: "jobgether", name: "Jobgether", url: "https://jobgether.com/remote-jobs/india", note: "Filter by 'open to candidates in India'.", cost: "Free, 5 matches a week; about $29/month for more", mix: "bigco", rank: 8 },
-  { id: "remoteok", name: "RemoteOK", url: "https://remoteok.com", note: "Regions: Worldwide. Every post must show a salary range.", cost: "Free to apply", mix: "bigco", rank: 9 },
-  { id: "wwr", name: "We Work Remotely", url: "https://weworkremotely.com/100-percent-remote-jobs", note: "'Anywhere in the World' tag (set by the employer, not checked).", cost: "Free basic; Pro $14.95/month", mix: "bigco", rank: 10 },
-  { id: "remotive", name: "Remotive", url: "https://remotive.com/remote-worldwide-jobs", note: "'Available from my location' filter includes Worldwide jobs.", cost: "Free tier shows only some jobs; paid plans", mix: "bigco", rank: 11 },
-  { id: "rwfa", name: "Real Work From Anywhere and Relomote", url: "https://www.realworkfromanywhere.com/", note: "Boards that list only worldwide roles.", cost: "Free", mix: "bigco", rank: 12 },
+  { id: "yc", name: "Y Combinator Work at a Startup", url: "https://www.workatastartup.com", note: "Build a full profile so founders can find you, then filter by remote and location; look for 'Remote (IN)'. Has Forward Deployed roles.", cost: "Free", mix: "startup", rank: 1, speed: 1, speedNote: "Founders message strong profiles themselves, often within a week, and loops move in days. Cold applications are slow: founders read a small share of inbound." },
+  { id: "hn", name: "Hacker News 'Who is hiring'", url: "https://hnhiring.com/locations/remote", note: "Monthly thread (hnhiring.com filters it). Look for REMOTE posts without a country limit; many are US/EU-only or timezone-bound.", cost: "Free", mix: "startup", rank: 2, speed: 2, speedNote: "Posters must be the hiring company and commit to replying; some run a paid build session instead of rounds." },
+  { id: "hn-wtbh", name: "Hacker News 'Who wants to be hired'", url: "https://news.ycombinator.com/submitted?id=whoishiring", note: "The same monthly batch has a thread where you post yourself: stack, location, 'remote, USD contract'. Employers come to you.", cost: "Free", mix: "startup", rank: 3, speed: 2, speedNote: "Inbound, so it's fast when it lands; no response-rate data." },
+  { id: "dailydev", name: "daily.dev Career Mode", url: "https://recruiter.daily.dev/", note: "Turn it on in daily.dev and set location and pay preferences. Employers see a match and approve you before anyone contacts you; salary is shown up front.", cost: "Free for developers", mix: "bigco", rank: 4, speed: 2, speedNote: "Double opt-in skips the application pile; response claims are daily.dev's own." },
+  { id: "hiringcafe", name: "HiringCafe", url: "https://hiringcafe.com/", note: "Pulls listings straight from company career pages, with true-remote, timezone and eligibility filters. Apply on the careers page it links to.", cost: "Free", mix: "bigco", rank: 5, speed: 2, speedNote: "Careers-page applications reached interview about 3.5 times as often as LinkedIn applications (6.87% vs 1.95%, 1.2M applications)." },
+  { id: "agentic", name: "Agentic engineering jobs", url: "https://agentic-engineering-jobs.com/jobs/langchain", note: "Roles by framework: LangGraph, LlamaIndex, CrewAI, Claude Agent SDK and more. Close match for AI-agent work. New board; check each role's location.", cost: "Free", mix: "startup", rank: 6, speed: 3, speedNote: "No speed data; depends on the employer." },
+  { id: "fde", name: "Forward Deployed job boards", url: "https://fdejobs.com", note: "fdejobs.com and fde.traversaal.ai list only FD roles (US, EU and India). Newer, niche boards.", cost: "Free", mix: "startup", rank: 7, speed: 3, speedNote: "No speed data." },
+  { id: "aijobs", name: "aijobs.net (Foorilla)", url: "https://aijobs.net/", note: "Long-running AI-only board, about 800 active listings, some marked 'Remote – India'.", cost: "Free", mix: "bigco", rank: 8, speed: 3, speedNote: "No speed data; depends on the employer." },
+  { id: "web3", name: "web3.career", url: "https://web3.career/india+remote-jobs", note: "Many crypto roles are worldwide and pay in USD or USDC. Only if you're open to crypto work.", cost: "Free", mix: "startup", rank: 9, speed: 2, speedNote: "Small teams usually move fast (not measured).", warn: "Fake crypto 'interviews' that ask you to run a repo are a known malware trick. Never run take-home code on your main machine." },
+  { id: "hww", name: "Hiring Without Whiteboards", url: "https://github.com/poteto/hiring-without-whiteboards", note: "A maintained list of companies that interview with take-homes or real problems instead of puzzles. Most are US or EU, so check location rules.", cost: "Free", mix: "startup", rank: 10, speed: 3, speedNote: "A list, not a board; speed depends on each company." },
+  { id: "wellfound", name: "Wellfound", url: "https://wellfound.com/remote", note: "Set your profile location to India and it shows remote roles you're eligible for. Also try the 'Distributed teams only' toggle.", cost: "Free", mix: "startup", rank: 11, speed: 3, speedNote: "About a 6% response rate, and about 80% of applications expire unreviewed (Huntr data)." },
+  { id: "remotecom", name: "Remote.com jobs", url: "https://remote.com/jobs", note: "Employers here already hire across borders through Remote's employer-of-record service. Make a profile once and let them find you.", cost: "Free", mix: "bigco", rank: 12, speed: 3, speedNote: "No speed data." },
+  { id: "himalayas", name: "Himalayas", url: "https://himalayas.app/jobs/countries/india", note: "Country, worldwide-only and timezone filters. Click through and apply on the company's own careers page.", cost: "Free", mix: "bigco", rank: 13, speed: 3, speedNote: "Depends on the employer; careers-page applications do best." },
+  { id: "jobgether", name: "Jobgether", url: "https://jobgether.com/remote-jobs/india", note: "Filter by 'open to candidates in India'.", cost: "Free, 5 matches a week; about $29/month for more", mix: "bigco", rank: 14, speed: 3, speedNote: "Depends on the employer." },
+  { id: "remoteok", name: "RemoteOK", url: "https://remoteok.com", note: "Regions: Worldwide. Every post must show a salary range.", cost: "Free to apply", mix: "bigco", rank: 15, speed: 3, speedNote: "Depends on the employer." },
+  { id: "wwr", name: "We Work Remotely", url: "https://weworkremotely.com/100-percent-remote-jobs", note: "'Anywhere in the World' tag (set by the employer, not checked).", cost: "Free basic; Pro $14.95/month", mix: "bigco", rank: 16, speed: 3, speedNote: "Depends on the employer." },
+  { id: "remotive", name: "Remotive", url: "https://remotive.com/remote-worldwide-jobs", note: "'Available from my location' filter includes Worldwide jobs.", cost: "Free tier shows only some jobs; paid plans", mix: "bigco", rank: 17, speed: 3, speedNote: "Depends on the employer." },
+  { id: "rwfa", name: "Real Work From Anywhere and Relomote", url: "https://www.realworkfromanywhere.com/", note: "Boards that list only worldwide roles.", cost: "Free", mix: "bigco", rank: 18, speed: 3, speedNote: "Depends on the employer." },
+  { id: "a16z", name: "VC portfolio boards (a16z, speedrun)", url: "https://jobs.a16z.com/", note: "Jobs across a fund's portfolio companies. Mostly US; filter Remote and check each role's eligibility.", cost: "Free", mix: "startup", rank: 19, speed: 3, speedNote: "No speed data." },
+  { id: "linkedin", name: "LinkedIn Jobs", url: "https://www.linkedin.com/jobs/search/?f_WT=2&geoId=92000000", note: "Remote + Worldwide search. Many 'remote' jobs are locked to one country, so read the location line. Turn on 'Open to work' for recruiter messages.", cost: "Free", mix: "bigco", rank: 20, speed: 4, speedNote: "Slowest: Easy Apply gets about 1–4% replies, while recruiter-initiated messages get about 17%. Let recruiters come to you." },
 ];
 
 export const DROPPED: { title: string; items: Dropped[] }[] = [
@@ -415,48 +486,64 @@ export const DROPPED: { title: string; items: Dropped[] }[] = [
     items: [
       { name: "Outlier (Scale AI)", why: "Tier and per-project qualification gates fail most people, with 30-day lockouts; India coding pays $13.75–27.50/hr; unexplained removals" },
       { name: "Alignerr", why: "Credible reports of unpaid hours (one: 65 hours, Sept 2026) and an F rating on BBB" },
+      { name: "AfterQuery", why: "Unpaid hours when a project paused (July 2026), accounts closed with work forfeited, India Stripe payouts put on hold" },
+      { name: "Pareto AI", why: "Reports of 3–4 weeks of missed pay and over $1,000 owed; intermittent work" },
+      { name: "SuperAnnotate (SME Careers)", why: "Advertises $60–100/hr; one real project paid $15/hr; months with no work" },
+      { name: "Rex.zone / RemoExperts / Abaka AI", why: "One-shot assessment, delayed payouts, missing referral pay, inconsistent work" },
       { name: "Mindrift (Toloka)", why: "Pay is location-based ($20–40/hr reported for India) and work comes and goes" },
       { name: "Invisible / Meridial", why: "Location-based pay, roughly $6–20/hr for India; sudden cancellations" },
       { name: "Deccan AI / Soul AI", why: "Priced for India, mostly non-coding rubric work, complaints about unpaid assessments" },
       { name: "Handshake AI", why: "India role is invite-only and capped at $25/hr" },
-      { name: "Braintrust", why: "Mostly reposts AI-data jobs from Turing and Outlier; fake-client malware scams; Trustpilot 1.7/5" },
+      { name: "Braintrust", why: "92 of 150 live listings were AI-training gigs at $18–55/hr (Oct 2026); net-30 pay; fake-client malware scams" },
+      { name: "Datacurve / Shipd", why: "Coding quests paid only if accepted, so unpaid work is built in; India payouts unconfirmed" },
+      { name: "Perle", why: "Pay partly in crypto points and tokens, with on-chain tiers" },
     ],
   },
   {
     title: "Not USD, or not really placing people",
     items: [
-      { name: "Uplers", why: "Sells Indian developers to clients at a discount (about $1,900/month for an experienced engineer)" },
+      { name: "Uplers", why: "Sells Indian developers to clients at a discount (about $1,900–3,500/month to clients); your share isn't disclosed" },
       { name: "Flexiple", why: "Pivoted to offshore teams on Indian payroll" },
       { name: "Supersourcing", why: "Indian staffing; its own pages put engineers at $6–14K a year" },
+      { name: "EPAM Anywhere", why: "Salaried in INR in India (offers around 18–30 LPA)" },
+      { name: "Wisemonk, Cutshort, Instahyre, Weekday", why: "Mostly Indian employers or India-entity payroll in INR" },
       { name: "Gigster", why: "Sold to Virtasant in 2024; no sign the network still places developers" },
+      { name: "Remotebase", why: "Pivoted to fixed-scope product builds; no evidence on developer pay" },
+      { name: "Paraform", why: "Recruiters submit candidates; you can't apply yourself" },
+      { name: "Sepal AI", why: "Bought by Mercor in Feb 2026; the work now runs through Mercor" },
     ],
   },
   {
-    title: "Cheap marketplaces and contests",
+    title: "Cheap marketplaces, contests and duplicate boards",
     items: [
       { name: "Fiverr, Freelancer.com, Guru, PeoplePerHour", why: "Compete on price; fastest, cheapest bids win" },
       { name: "Codementor", why: "Side income at most: 20% cut and sporadic demand" },
+      { name: "Pangea", why: "Mostly creative and marketing roles; reviewers report no replies" },
       { name: "Devpost, HackerEarth, Unstop, Topcoder, IssueHunt, Superteam Earn", why: "Contests and prize bounties, not client hiring" },
       { name: "Gumroad", why: "Its no-interview paid part-time model ended; now a New York office" },
       { name: "Replit Bounties", why: "Shut down September 2025" },
-      { name: "Working Nomads, Remote Rocketship, FlexJobs", why: "Paywalled copies of free boards" },
+      { name: "Working Nomads, Remote Rocketship, FlexJobs, Remote.co, startup.jobs", why: "Paywalled or partly paywalled copies of free boards" },
+      { name: "Jobicy, Jobspresso, Dynamite Jobs, NoDesk", why: "Free and legitimate, but they repeat the boards above" },
+      { name: "Built In, Welcome to the Jungle (Otta), Jobright.ai", why: "Mostly US/UK/EU roles; India-remote is rare" },
     ],
   },
   {
-    title: "Good process, but not open to India",
+    title: "Genuine, but not a fit or not open to India",
     items: [
+      { name: "Codeable", why: "Genuine and $80–120/hr, but WordPress-only; worth it only with deep WordPress/WooCommerce experience" },
       { name: "PostHog", why: "Paid SuperDay, but hires only GMT−8 to GMT+2" },
       { name: "Linear", why: "Paid work trial, but engineering roles are US and Europe only" },
       { name: "37signals", why: "Americas or Europe only" },
       { name: "Ghost", why: "Paid trial, but UTC−1 to UTC+3 only" },
       { name: "Close", why: "Engineering roles US only" },
-      { name: "Proxify", why: "Time-zone rule (GMT+4 to GMT−10) leaves out India" },
-      { name: "Lemon.io", why: "Doesn't accept most Asian countries" },
-      { name: "Terminal, Revelo, Index.dev, BairesDev, Workana", why: "Latin America, Canada or Europe focused" },
-      { name: "DataAnnotation, Snorkel, Prolific", why: "US or a short list of countries; Prolific closed to new India sign-ups" },
+      { name: "Strider, Howdy, Revelo", why: "Latin America only" },
+      { name: "Surge AI / DataAnnotation, Snorkel, Prolific", why: "US or a short list of countries; Prolific closed to new India sign-ups" },
+      { name: "OpenAI, Anthropic, Google DeepMind (direct)", why: "No open contractor programme for India-based coders; they buy this work through vendors like Mercor and Turing" },
+      { name: "Proxify, Lemon.io", why: "Time-zone or region rules leave out India" },
+      { name: "Terminal, Index.dev, BairesDev, Workana", why: "Latin America, Canada or Europe focused" },
       { name: "Gun.io, Malt, Talent500", why: "US/EU-focused, needs an EU business, or pays INR at India offices" },
-      { name: "A.Team, X-Team, Contra", why: "India eligibility unverified; A.Team and Contra don't select on real work" },
-      { name: "Pesto", why: "Shut down in 2025" },
+      { name: "A.Team, X-Team, Contra", why: "India eligibility unverified; A.Team and Contra don't select on real work (Contra is fine for invoicing clients you already have)" },
+      { name: "Pesto, Hired", why: "Shut down" },
     ],
   },
 ];
@@ -486,6 +573,10 @@ export function byEntry(a: Platform, b: Platform) {
   if (a.test !== b.test) return TEST_ORDER[a.test] - TEST_ORDER[b.test];
   const d = DSA_ORDER[maxDsa(a.stages)] - DSA_ORDER[maxDsa(b.stages)];
   return d || a.name.localeCompare(b.name);
+}
+
+export function bySpeed(a: Platform, b: Platform) {
+  return a.speed - b.speed || byEntry(a, b);
 }
 
 export function byPay(a: Platform, b: Platform) {

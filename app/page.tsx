@@ -87,10 +87,18 @@ export default function Home() {
         </p>
         <div className="start">
           <div>
+            <h2>Fastest to paid work</h2>
+            <p>
+              G2i (about a week, ending in a real task), Crossover (you apply to an open role; offers in
+              days), Algora (paid days after a merged PR) and a YC Work at a Startup profile founders can
+              find. Pool networks like Turing and micro1 can take months.
+            </p>
+          </div>
+          <div>
             <h2>No DSA at all</h2>
             <p>
-              Upwork (your history), Mercor (AI interview, no live coding), Crossover (aptitude test
-              instead of DSA, fixed $100K/yr roles) and Automattic (take-home, then a paid trial).
+              Upwork (your history), Crossover (aptitude test instead of DSA, fixed $100K/yr roles),
+              Automattic (take-home, then a paid trial) and G2i (code review, not puzzles).
             </p>
           </div>
           <div>
@@ -150,6 +158,12 @@ export default function Home() {
           <p>
             DSA levels use LeetCode terms and take the hardest stage in the pipeline. The job-board loops
             are typical patterns, not rules; each employer sets its own.
+          </p>
+          <p>
+            &ldquo;Paid work in&rdquo; is how soon paid work usually starts after you apply, from
+            candidate reports and the platform&apos;s own process: platforms where you apply to a live
+            role start sooner than pools where passing only gets you into a queue. Where no timing data
+            exists, the entry says so.
           </p>
           <p>
             Stage details come from official pages where they exist, otherwise from candidate write-ups
