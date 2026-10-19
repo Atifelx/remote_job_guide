@@ -68,6 +68,13 @@ export const KINDS: { id: Kind; title: string; short: string; blurb: string }[] 
       "The employer hires you directly and runs its own interviews. Ranked by India-eligible developer job volume times your chance of a reply. Wherever you find a role, apply on the company's own careers page: those applications reach interview about 3.5 times as often as LinkedIn ones.",
   },
   {
+    id: "project",
+    title: "Project-first portals",
+    short: "Project-first",
+    blurb:
+      "Platforms where many clients choose developers from real work: a merged PR, a paid first milestone, a portfolio of shipped projects or a trial. Only Algora and Upwork meet every rule; ranks 3–6 each break one (India unconfirmed, an aptitude test, or a live coding or DSA screen first). Upwork, Crossover and Toptal have full entries in their own sections.",
+  },
+  {
     id: "takehome",
     title: "Take-home hiring, no DSA",
     short: "Take-home",
@@ -261,6 +268,63 @@ export const PLATFORMS: Platform[] = [
     src: [["Selection process", "https://www.crossover.com/selection-process"], ["Proctored CCAT", "https://www.crossover.com/resources/pccat-guide"], ["India pay", "https://www.glassdoor.com/Salary/Crossover-for-Work-India-Salaries-EI_IE1041838.0,18_IL.19,24_IN115.htm"]],
   },
 
+  // Project-first portals
+  {
+    id: "algora", name: "Algora", url: "https://algora.io", kind: "project", rank: 1, label: "Merged PR to hire at funded open-source companies",
+    test: "trial", difficulty: 3,
+    speed: 1, speedNote: "You're paid 1–3 days after your PR merges. Job offers follow a track record of merged work.",
+    flow: 2, flowNote: "74 open bounties worth $11,651 on 19 Oct 2026, 12 posted in the previous 48 hours (Opire and IssueHunt showed 0). Algora says it has placed 30+ full-time engineers across 100+ customers.",
+    check: "Payouts need a Stripe Express account with ID verification, and a 2023 thread says Indian payouts are limited to sole proprietors, LLPs or companies. Plan on registering as a sole proprietor. Indian contributors do appear on completed bounties.",
+    stages: [
+      { title: "Claim an issue", formats: [], inside: "Pick a funded GitHub issue at a company you'd actually join and comment /attempt." },
+      { title: "Merged PR", formats: ["trial", "codereview"], paid: true, inside: "Open a PR with /claim. The company's maintainers review it and merge it into their real codebase, then release the bounty ($50–2,500). No DSA." },
+      { title: "Hiring", formats: ["talk"], inside: "Algora ranks candidates by their open-source work and feeds them into the company's hiring system. Hires include CodeRabbit, ComfyUI and Firecrawl." },
+    ],
+    prep: "Pick 3–5 companies you'd join, read their contributing guides and start with small, clean PRs. Check each repo's policy first: 37 projects ban AI-written PRs.",
+    after: "Repeat contributors get contract offers; some convert to full-time.",
+    lo: null, hi: null, est: false,
+    pay: "$50–2,500 per bounty; salaries set by each company.",
+    watch: "Many PRs compete for each bounty and only the merged one is paid, so treat bounties as an audition with companies you'd join.",
+    src: [["Algora", "https://algora.io"], ["Completed bounties", "https://algora.io/algora/bounties?status=completed"], ["Live bounty count", "https://bountyos.rovidev.com/en/github-bounty-board/"], ["India payouts", "https://github.com/orgs/qdrant/discussions/2297"]],
+  },
+  {
+    id: "ateam", name: "A.Team", url: "https://www.a.team/join", kind: "project", rank: 3, label: "Team missions; strongest AI-agent demand",
+    test: "practical", difficulty: 3,
+    speed: 3, speedNote: "No public mission counts; matching depends on client demand.",
+    flow: 2, flowNote: "11,000+ builders; demand is heaviest for fine-tuning, RAG and multi-agent work. No public count of live missions.",
+    check: "India eligibility unconfirmed: published rates are for US builders and some missions have location limits. Email them before applying.",
+    stages: [
+      { title: "Portfolio and GitHub review", formats: [], inside: "A person reviews your shipped work." },
+      { title: "Call", formats: ["talk"], inside: "A conversation about your work. AI applicants also have a technical conversation with a senior practitioner. No coding test." },
+      { title: "Mission applications", formats: ["talk"], inside: "You apply to missions and the client picks you from your profile and past work." },
+    ],
+    prep: "Lead with shipped AI-agent work: a short write-up per project covering the problem, architecture and results.",
+    after: "Paid twice a month, even if the client hasn't paid yet.",
+    lo: null, hi: null, est: false,
+    pay: "US median $115/hr; retainers $15.5K–19K a month. India rates not published.",
+    watch: "Under 2% of applicants are accepted.",
+    src: [["Join", "https://www.a.team/join"], ["AI jobs", "https://www.a.team/ai-jobs"]],
+  },
+  {
+    id: "g2i", name: "G2i", url: "https://www.g2i.co/for-talent", kind: "project", rank: 5, label: "Client-watched interview, then a 7-day client trial",
+    test: "live", difficulty: 3,
+    speed: 2, speedNote: "Client introductions follow vetting, then a 7-day trial on the client's side.",
+    flow: 2, flowNote: "14 open roles listed in Oct 2026; much of its 2026 hiring is AI code-review work.",
+    check: "Works in 150+ countries, but India isn't named. Confirm before you start.",
+    stages: [
+      { title: "Technical interview", formats: ["live", "dsa"], dsa: "easy", time: "45–60 min", inside: "Practical live coding that clients can watch; Glassdoor 2026 rates it 2.54/5 for difficulty." },
+      { title: "Framework test", formats: [], inside: "A test in your main framework." },
+      { title: "Client introductions", formats: ["talk"], inside: "G2i introduces you to clients who need your stack." },
+      { title: "7-day client trial", formats: ["trial"], time: "7 days", inside: "You work with the client for a week before the contract continues." },
+    ],
+    prep: "Be sharp in your main framework and comfortable explaining code as you write it.",
+    after: "Paid weekly; G2i says it pays even if the client doesn't.",
+    lo: 2500, hi: 6000, est: true,
+    pay: "$30–70/hr; a May 2026 AI code-review drive paid $100–200/hr.",
+    watch: "Much of 2026 hiring is AI-training work rather than product teams.",
+    src: [["For talent", "https://www.g2i.co/for-talent"], ["2026 hiring", "https://jobbi.org/news/g2i-is-hiring-50-software-engineers-at-up-to-200hour-to-judge-ai-written-code/"]],
+  },
+
   // Take-home hiring
   {
     id: "automattic", name: "Automattic", url: "https://automattic.com/work-with-us/how-we-hire-developers/", kind: "takehome", rank: 1, label: "WordPress.com, Tumblr, WooCommerce",
@@ -378,6 +442,13 @@ export const PLATFORMS: Platform[] = [
   },
 ];
 
+/** Project-first entries that already have a full row in another section. */
+export const PROJECT_REFS: { id: string; rank: number; why: string }[] = [
+  { id: "upwork", rank: 2, why: "Clients hire through a paid first milestone, then extend or convert you. The largest volume of paid trials; 0% fee on contracts you bring in yourself." },
+  { id: "crossover", rank: 4, why: "A real-world project, graded blind, before the offer, but a CCAT aptitude test comes first. 4–5 India-eligible roles open in Oct 2026 ($60K–200K/yr)." },
+  { id: "toptal", rank: 6, why: "A 1–3 week test project defended in a code-review call, but a Codility DSA test comes first." },
+];
+
 export interface Board {
   id: string;
   name: string;
@@ -456,11 +527,12 @@ export const DROPPED: { title: string; items: Dropped[] }[] = [
       { name: "Codementor", why: "Small side channel for mentoring, not a pipeline" },
       { name: "Guru, Truelancer, PeoplePerHour", why: "Cheap work and little of it; PeoplePerHour's Trustpilot profile was removed" },
       { name: "Andela", why: "About 0.5% acceptance, few Indian placements, Trustpilot 1.9" },
-      { name: "G2i", why: "Fast onboarding, but small (13K visits a month) and India unconfirmed" },
       { name: "xAI AI Tutor", why: "Paused tutor hiring in June 2026; non-US pay unpublished" },
       { name: "Uplers, Flexiple, Supersourcing, EPAM Anywhere", why: "India-rate or INR pay" },
       { name: "Lemon.io, Proxify, Gun.io", why: "India missing from accepted countries, Europe hours, or too small" },
-      { name: "Algora, Cal.com", why: "Few roles; India payouts or eligibility unconfirmed" },
+      { name: "Cal.com", why: "Few roles; India eligibility unconfirmed" },
+      { name: "Codeable", why: "Applications closed with a waitlist (Oct 2026); WordPress only" },
+      { name: "Opire, IssueHunt", why: "0 open bounties on 19 Oct 2026" },
       { name: "Supabase, Canonical, Elastic", why: "Live coding or aptitude tests before any take-home" },
       { name: "RemoteOK, Remotive, daily.dev", why: "Only 73 India dev results, paywalled database, or few matches by design" },
       { name: "Remote.com jobs, Otta, Built In, web3.career, aijobs.net", why: "Mostly US/UK/EU roles, or niche" },

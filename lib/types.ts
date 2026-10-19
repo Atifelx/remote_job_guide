@@ -1,4 +1,4 @@
-export type Kind = "freelance" | "vetted" | "boards" | "takehome";
+export type Kind = "freelance" | "vetted" | "boards" | "project" | "takehome";
 
 /** Primary entry gate, used for the ladder columns. */
 export type Test =

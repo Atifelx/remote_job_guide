@@ -9,6 +9,7 @@ import {
   KINDS,
   LOOPS,
   PLATFORMS,
+  PROJECT_REFS,
   SPEED_LABEL,
   TESTS,
   FLOW_LABEL,
@@ -252,6 +253,47 @@ function RowList({ items, prep }: { items: Platform[]; prep: Prep }) {
   );
 }
 
+type Ref = { id: string; rank: number; why: string; p: Platform };
+
+/** Project-first section: full rows plus link rows for platforms listed in other sections. */
+function ProjectList({ items, refs, sort, prep }: { items: Platform[]; refs: Ref[]; sort: Sort; prep: Prep }) {
+  if (!items.length && !refs.length) {
+    return (
+      <p className="empty">
+        Nothing here matches your prep yet. Raise your DSA level or tick more test types above.
+      </p>
+    );
+  }
+  const rows: ({ kind: "p"; p: Platform; rank: number } | { kind: "ref"; r: Ref; rank: number })[] = [
+    ...items.map((p) => ({ kind: "p" as const, p, rank: p.rank })),
+    ...refs.map((r) => ({ kind: "ref" as const, r, rank: r.rank })),
+  ];
+  // Best-first keeps the researched order; other sorts list full rows first, then the links.
+  if (sort === "best") rows.sort((a, b) => a.rank - b.rank);
+  return (
+    <ol className="rows">
+      {rows.map((row, i) =>
+        row.kind === "p" ? (
+          <Row key={row.p.id} p={row.p} rank={i + 1} prep={prep} />
+        ) : (
+          <li key={row.r.id} className="ref-row">
+            <span className="rank">{i + 1}</span>
+            <span className="who">
+              <a className="name" href={`#${row.r.id}`}>
+                {row.r.p.name}
+              </a>
+              <span className="label">{row.r.why}</span>
+            </span>
+            <span className="ref-tag">
+              Full entry under {KINDS.find((k) => k.id === row.r.p.kind)!.title}
+            </span>
+          </li>
+        ),
+      )}
+    </ol>
+  );
+}
+
 function SectionHead({ kind, count }: { kind: Kind; count: number }) {
   const k = KINDS.find((x) => x.id === kind)!;
   return (
@@ -312,6 +354,7 @@ export default function Directory() {
     return {
       freelance: pick((p) => p.kind === "freelance"),
       vetted: pick((p) => p.kind === "vetted"),
+      project: pick((p) => p.kind === "project"),
       takehome: pick((p) => p.kind === "takehome"),
     };
   })();
@@ -326,10 +369,15 @@ export default function Directory() {
     );
   })();
 
+  const projectRefs = PROJECT_REFS.map((r) => ({ ...r, p: PLATFORMS.find((p) => p.id === r.id)! })).filter(
+    (r) => keep(r.p.stages, r.p.speed),
+  );
+
   const counts: Record<Kind, number> = {
     freelance: list.freelance.length,
     boards: boards.length,
     vetted: list.vetted.length,
+    project: list.project.length + projectRefs.length,
     takehome: list.takehome.length,
   };
 
@@ -527,6 +575,11 @@ export default function Directory() {
           ) : (
             <p className="empty">Nothing here matches your prep yet. Raise your DSA level or tick more test types above.</p>
           )}
+        </section>
+
+        <section id="project" className="sect k-project" aria-labelledby="project-h">
+          <SectionHead kind="project" count={counts.project} />
+          <ProjectList items={list.project} refs={projectRefs} sort={sort} prep={prep} />
         </section>
 
         <section id="takehome" className="sect k-takehome" aria-labelledby="takehome-h">

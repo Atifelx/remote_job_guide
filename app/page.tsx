@@ -105,8 +105,8 @@ export default function Home() {
           <div>
             <h2>No DSA at all</h2>
             <p>
-              Upwork, Fiverr Pro, Crossover (aptitude test instead) and every take-home company:
-              Automattic, Zapier, GitLab, DuckDuckGo, Doist and Toggl.
+              Algora (a merged PR is the test), Upwork, Fiverr Pro, Crossover (aptitude test instead)
+              and every take-home company: Automattic, Zapier, GitLab, DuckDuckGo, Doist and Toggl.
             </p>
           </div>
         </div>

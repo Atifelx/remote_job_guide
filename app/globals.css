@@ -10,6 +10,7 @@
   --boards: #3346b8;
   --vetted: #0e6f67;
   --build: #962a70;
+  --project: #5a46b0;
 
   --t-open: #e2e7ed;
   --t-ai: #ccd5e0;
@@ -258,6 +259,7 @@ h3 {
 .k-freelance { --k: var(--freelance); }
 .k-boards { --k: var(--boards); }
 .k-vetted { --k: var(--vetted); }
+.k-project { --k: var(--project); }
 .k-takehome { --k: var(--build); }
 .k-skip { --k: var(--muted); }
 
@@ -522,6 +524,29 @@ h3 {
   flex-direction: column;
   align-items: flex-start;
   gap: 4px;
+}
+
+.ref-row {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 8px 16px;
+  padding: 12px 16px;
+}
+
+.row-item + .ref-row,
+.ref-row + .row-item,
+.ref-row + .ref-row {
+  border-top: 1px solid var(--rule);
+}
+
+.ref-tag {
+  font-size: 0.78rem;
+  color: var(--muted);
+  border: 1px dashed var(--rule);
+  border-radius: 999px;
+  padding: 2px 9px;
+  white-space: nowrap;
 }
 
 .board-more {
@@ -1245,9 +1270,42 @@ button.link {
     grid-template-columns: 2rem 1fr;
   }
 
+  .ref-row {
+    grid-template-columns: 2rem 1fr;
+  }
+
+  .ref-tag {
+    grid-column: 2;
+    justify-self: start;
+    white-space: normal;
+  }
+
   .board .test,
   .board .board-speed,
-  .board .board-more {
+  .board .ref-row {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 8px 16px;
+  padding: 12px 16px;
+}
+
+.row-item + .ref-row,
+.ref-row + .row-item,
+.ref-row + .ref-row {
+  border-top: 1px solid var(--rule);
+}
+
+.ref-tag {
+  font-size: 0.78rem;
+  color: var(--muted);
+  border: 1px dashed var(--rule);
+  border-radius: 999px;
+  padding: 2px 9px;
+  white-space: nowrap;
+}
+
+.board-more {
     grid-column: 2;
   }
 
